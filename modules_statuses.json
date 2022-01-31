@@ -1,0 +1,7 @@
+{
+    "Base": true,
+    "Product": true,
+    "Customer": true,
+    "Sales": true,
+    "POS": true
+}

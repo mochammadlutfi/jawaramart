@@ -1,0 +1,99 @@
+.slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 100%;
+
+    .slider-btn {
+        cursor: pointer;
+        background: #F2F3F4;
+        width: 45px;
+        height: 45px;
+        position: absolute;
+        display: block;
+        z-index: 100;
+        border-radius: 50%;
+        -webkit-transition: all .2s ease-out;
+        -moz-transition: all .2s ease-out;
+        transition: all .2s ease-out;
+        text-align: center;
+        line-height: 46px;
+        font-size: 16px;
+        color: $body-color;
+
+        &.slider-prev {
+            left: 20px;
+
+            i {
+                margin-right: 2px;
+            }
+        }
+
+        &.slider-next {
+            right: 20px;
+
+            i {
+                margin-left: 2px;
+            }
+        }
+
+        &:hover {
+            background-color: $brand-primary;
+            color: #fff;
+            border-color: $brand-primary;
+        }
+
+
+    }
+
+    &.slider-arrow-2 {
+        .slider-btn {
+            width: 40px;
+            height: 40px;
+            line-height: 46px;
+            font-size: 24px;
+        }
+
+        &.flex-right {
+            display: flex;
+            position: relative;
+            max-width: 200px;
+            justify-content: flex-end;
+            top: unset;
+            transform: unset;
+
+            .slider-btn {
+                position: relative;
+                left: unset;
+                right: unset;
+
+                &.slider-prev {
+                    margin-right: 10px;
+                }
+            }
+        }
+    }
+
+    &.slider-arrow-3 {
+        .slider-btn {
+            width: 30px;
+            height: 30px;
+            line-height: 28px;
+            font-size: 12px;
+            margin-top: -15px;
+        }
+    }
+
+    &.style-3 {
+        .slider-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #dcdeed;
+            line-height: 40px;
+            font-size: 12px;
+            margin-top: -20px;
+        }
+    }
+
+}
