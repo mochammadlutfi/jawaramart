@@ -83,7 +83,7 @@
                                             <label class="custom-control-label" :for="data.id"></label>
                                         </label>
                                     </td> 
-                                    <td> <img class="media-object" :src="data.main_image" style="max-width:45px"></td>
+                                    <td> <img class="img-avatar  img-avatar32" :src="data.avatar_url" style="max-width:45px"></td>
                                     <td>{{ data.name }}</td>
                                     <td>{{ data.email }}</td>
                                     <td>{{ data.total_stock }}</td>
@@ -114,7 +114,7 @@
 
 <script>
 import { Link } from '@inertiajs/inertia-vue';
-import BaseLayout from '../Layouts/Authenticated.vue';
+import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import moment from 'moment';
 import _ from 'lodash';
 export default {

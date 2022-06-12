@@ -4,11 +4,18 @@ namespace App\Http\Controllers\Frontend;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Cart;
 use Illuminate\Support\Facades\DB;
 use Session;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Cart;
+use App\Models\UserAddress;
+use App\Models\Sale;
+use App\Models\SaleLine;
+use App\Models\Payment;
+use App\Helpers\GeneralHelp;
+
+use Carbon\Carbon;
 class CheckoutController extends Controller
 {
     public function __construct()
@@ -26,96 +33,99 @@ class CheckoutController extends Controller
             if(Session::has('cart') && count(Session::get('cart')) > 0){
                $cart = Session::get('cart');
             }else{
-                return redirect()->route('cart');
+                return redirect()->route('cart.index');
             }
         }
 
-        $alamat = Alamat::where('user_id', auth()->guard('web')->user()->id)->where('is_utama', 1)->first();
+        $user_id = auth()->guard('web')->user()->id;
+        $address = UserAddress::where('user_id', $user_id)->where('is_primary', 1)->first();
 
-        return Inertia::render('Frontend/Cart/Shipping');
+        return Inertia::render('Frontend/Checkout/Shipping',[
+            'cart' => $cart,
+            'address' => $address,
+        ]);
+
     }
 
-    public function pembayaran(Request $request)
+    public function payment(Request $request)
     {
-        $data = array(
-            'alamat' => $request->alamat,
-            'total' => $request->total,
-        );
-        Session::put('checkout', $data);
-        return view('umum.cart.pembayaran', compact('data'));
+        // dd($request->all());
+        if ($request->isMethod('post')) {
+            Session::put('checkout', $request->all());
+            $data = $request->all();
+        }else if($request->isMethod('get')){
+            if(Session::has('checkout') && count(Session::get('checkout')) > 0){
+                $data = Session::get('checkout');
+            }else{
+                return redirect()->route('cart.index');
+            }
+        }
+        
+        return Inertia::render('Frontend/Checkout/Payment',[
+            'data' => $data,
+        ]);
     }
 
-    public function simpan(Request $request)
+    public function store(Request $request)
     {
+        // dd($request->all());
+        // dd($code);
         DB::beginTransaction();
         try{
+
+            $code = GeneralHelp::generate_payment_code($request->payment_method);
 
             $checkout = Session::get('checkout');
             $user_id = auth()->guard('web')->user()->id;
             $cart = $request->session()->get('cart');
 
-            foreach($cart as $bisnis => $value)
-            {
-                $order_data = array(
-                    'status' => 'dipesan',
-                    'bayar_status' => 'unpaid',
-                    'user_id' => $user_id,
-                    'invoice_no' => getInvoice(),
-                    'final_total' => $checkout['total'],
-                    'alamat_kirim' => json_encode($checkout['alamat']),
-                    'tgl_transaksi' => Carbon::now()->toDateTimeString(),
-                );
-                $order = Order::create($order_data);
-                foreach($value as $v)
-                {
-                    $item = Cart::find($v);
-                    $orderItem = new OrderDetail();
-                    $orderItem->order_id = $order->id;
-                    $orderItem->bisnis_id = $item->bisnis_id;
-                    $orderItem->produk_id = $item->produk_id;
-                    $orderItem->variasi_id = $item->variasi_id;
-                    $orderItem->harga = $item->harga;
-                    $orderItem->qty = $item->qty;
-                    $orderItem->sub_total = $item->sub_total;
-                    $orderItem->save();
+            $data = new Sale();
+            $data->is_web = 1;
+            $data->date = Carbon::now();
+            $data->ref = GeneralHelp::generate_ref_sale();
+            $data->customer_id = $user_id;
+            $data->delivery_id = $checkout['delivery_id'];
+            $data->total = $checkout['sub_total'];
+            $data->shipping_cost = $checkout['shipping']['price'];
+            $data->grand_total = $checkout['sub_total'] + $checkout['shipping']['price'] + $code;
+            $data->status = 'pending';
+            $data->payment_status = 'unpaid';
+            $data->payment_due = Carbon::now()->addDay(1);
+            $data->save();
 
-
-                    $item->delete();
-                }
-
+            foreach($checkout['products'] as $i){
+                $line = new SaleLine();
+                $line->product_id = $i['id'];
+                $line->variant_id = $i['variant_id'];
+                $line->unit_price = $i['unit_price'];
+                $line->net_price = $i['unit_price'];
+                $line->qty = $i['qty'];
+                $line->sub_total = $i['unit_price'] * $i['qty'];
+                $data->line()->save($line);
             }
+            
+            $payment = new Payment();
+            $payment->amount = $checkout['sub_total'] + $checkout['shipping']['price'];
+            $payment->amount_received = $checkout['sub_total'] + $checkout['shipping']['price'] + $code;
+            $payment->payment_method_id = $request->payment_method;
+            $payment->code = $code;
+            $data->payment()->save($payment);
+
+            foreach($checkout['products'] as $i){
+                $cr = Cart::where('variant_id', $i['variant_id'])
+                ->where('user_id', $user_id)->first();
+                $cr->delete();
+            }
+
+            Session::forget('checkout');
             Session::forget('cart');
-            // $produkCart = Cart::whereIn('id', $request->session()->get('cart'))->with('bisnis:id,nama')->orderBy('updated_at', 'DESC');
-            // foreach($produkCart->get() as $item)
-            // {
-            //     $orderItem = new OrderDetail();
-            //     $orderItem->order_id = $order->id;
-            //     $orderItem->bisnis_id = $item->bisnis_id;
-            //     $orderItem->produk_id = $item->produk_id;
-            //     $orderItem->variasi_id = $item->variasi_id;
-            //     $orderItem->harga = $item->harga;
-            //     $orderItem->qty = $item->qty;
-            //     $orderItem->sub_total = $item->sub_total;
-            //     $orderItem->save();
-            // }
-
-            // $produkCart->delete();
-
-            // Session::forget('cart');
 
         }catch(\QueryException $e){
             DB::rollback();
-            return response()->json([
-                'fail' => true,
-                'pesan' => 'gagal',
-                'log' => $e,
-            ]);
+            return back();
         }
         DB::commit();
-
-        return response()->json([
-            'fail' => false,
-        ]);
+        return redirect()->route('user.order.payment.show', $data->id);
     }
 
     public function bayar()

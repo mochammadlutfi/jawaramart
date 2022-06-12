@@ -77,7 +77,7 @@ class SliderController extends Controller
                 return back();
             }
             DB::commit();
-            return redirect()->route('admin.product.brand.index');
+            return redirect()->route('admin.appearance.slider.index');
         }
     }
 
@@ -87,9 +87,45 @@ class SliderController extends Controller
      * @param int $id
      * @return Renderable
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $rules = [
+            'link' => 'required',
+        ];
+
+        $pesan = [
+            'link.required' => 'Link Slide must be filled!',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $pesan);
+        if ($validator->fails()){
+            return back()->withErrors($validator->errors());
+        }else{
+            DB::beginTransaction();
+            try{
+                    $data = Slider::where('id', $request->id)->first();
+                    $data->url = $request->link;
+                    $data->state = $request->state;
+                    if($data->image != $request->image){
+                        if(Storage::disk('public')->exists($data->image))
+                        {
+                            Storage::disk('public')->delete($data->image);
+                        }
+                        if($request->hasFile('image')){
+                            $data->image = $this->uploadFiles($request->file('image'));
+                        }else{
+                            $data->image = null;
+                        }
+                    }
+                    $data->save();
+
+            }catch(\QueryException $e){
+                DB::rollback();
+                return back();
+            }
+            DB::commit();
+            return redirect()->route('admin.appearance.slider.index');
+        }
     }
 
     /**
@@ -99,7 +135,17 @@ class SliderController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $data = Slider::where('id', $id)->first();
+        $cek = Storage::disk('public')->exists($data->image);
+        if($cek)
+        {
+            Storage::disk('public')->delete($data->image);
+        }
+        $hapus_db = Slider::destroy($data->id);
+        if($hapus_db)
+        {
+            return redirect()->route('admin.appearance.slider.index');
+        }
     }
 
     private function uploadFiles($file){

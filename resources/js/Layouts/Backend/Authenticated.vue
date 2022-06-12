@@ -1,5 +1,5 @@
 <template>
-    <div id="page-container" class="sidebar-o enable-page-overlay side-scroll main-content-boxed side-trans-enabled">
+    <div id="page-container" class="sidebar-o enable-page-overlay side-scroll main-content-boxed side-trans-enabled" v-bind:class="{'sidebar-mini': pos}">
         
         <Head :title="title ? `${title} - Admin | ${ $page.props.settings.app_name }` : ' Admin | ' + $page.props.settings.app_name">
             <slot />
@@ -46,6 +46,7 @@ export default {
     },
     props: {
         title: String,
+        pos : Boolean,
     },
     data() {
         return {

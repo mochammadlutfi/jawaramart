@@ -9,36 +9,44 @@
                     </div>
                     <form @submit.prevent="submit">
                         <div class="form-group">
-                            <label class="form-label" for="reg-name">Nama Lengkap
+                            <label class="form-label" for="field-name">Nama Lengkap
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control" name="name" id="reg-name" placeholder="Masukan Nama Lengkap">
-                            <div class="invalid-feedback" id="reg_error-name"></div>
+                            <input type="text" v-bind:class="{'form-control':true, 'is-invalid' : errors.name }" id="field-username" v-model="form.name" autofocus>
+                            <div v-if="errors.name" class="invalid-feedback">
+                                {{ errors.name[0] }}
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="reg-email">Alamat Email
+                            <label class="form-label" for="field-email">Alamat Email
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control" name="email" id="reg-email" placeholder="Masukan Alamat Email">
-                            <div class="invalid-feedback" id="reg_error-email"></div>
+                            <input type="text" v-bind:class="{'form-control':true, 'is-invalid' : errors.email}" id="field-username" v-model="form.email" autofocus>
+                            <div v-if="errors.email" class="invalid-feedback">
+                                {{ errors.email[0] }}
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="reg-password">Password
+                            <label class="form-label" for="field-password">Password
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="password" class="form-control" name="password" id="reg-password" placeholder="Masukan Password">
-                            <div class="invalid-feedback" id="reg_error-password"></div>
+                            <PasswordInput v-model="form.password" :error="errors.password" id="field-password"/>
+                            <div v-if="errors.password" class="text-danger text-sm">
+                                {{ errors.password[0] }}
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="reg-password_confirmation">Konfirmasi Password
+                            <label class="form-label" for="field-password_confirmation">Konfirmasi Password
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="password" class="form-control" name="password_confirmation" id="reg-password_confirmation" placeholder="Masukan Konfirmasi Password">
-                            <div class="invalid-feedback" id="reg_error-password_confirmation"></div>
+                            <PasswordInput v-model="form.password_confirmation" :error="errors.password_confirmation" id="field-password_confirmation"/>
+                            <div v-if="errors.password_confirmation" class="invalid-feedback">
+                                {{ errors.password_confirmation[0] }}
+                            </div>
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-block">
-                                Masuk Sekarang
+                            <button type="submit" class="btn btn-primary btn-block" :disabled="loading">
+                                Daftar Sekarang
                             </button>
                         </div>
                     </form>
@@ -50,9 +58,11 @@
 
 <script>
 import BaseLayout from "@/layouts/frontend/BaseLayout";
+import PasswordInput from '@/Components/Form/PasswordInput';
 export default {
     components: {
         BaseLayout,
+        PasswordInput
     },
     props: {
         canResetPassword: Boolean,
@@ -61,20 +71,32 @@ export default {
     },
     data() {
         return {
-            form: this.$inertia.form({
-                email: '',
-                password: '',
-                remember: false
-            }),
+            form: {
+                name : null,
+                email : null,
+                password: null,
+                password_confirmation: null,
+            },
             loading : false,
         }
     },
 
     methods: {
         submit() {
-            this.form.post(this.route('login'), {
-                onFinish: () => this.form.reset('password'),
-            })
+            let form = this.$inertia.form(this.form);
+            let url = this.route("register");
+            form.post(url, {
+                preserveScroll: true,
+                onProgress: () => {
+                    this.loading = true;
+                },
+                onSuccess: () => {
+                    this.loading = false;
+                },
+                onError:(error) => {
+                    this.$swal.close();
+                },
+            });
         }
     }
  }

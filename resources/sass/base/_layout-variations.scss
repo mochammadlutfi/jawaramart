@@ -20,14 +20,15 @@
         width: $space-narrow;
       }
     }
-  }
+    
 
-  &.main-content-boxed {
-    > #page-header .content-header,
-    > #page-header .content,
-    > #main-container .content,
-    > #page-footer .content {
-      max-width: $space-boxed;
+    &.main-content-boxed {
+        > #page-header .content-header,
+        > #page-header .content,
+        > #main-container .content,
+        > #page-footer .content {
+        max-width: $space-main-max-width;
+        }
     }
   }
 
@@ -41,6 +42,15 @@
         padding-top: $header-height - 36px;
         padding-bottom: 2px;
       }
+    }
+    
+    &.main-content-boxed {
+        > #page-header .content-header,
+        > #page-header .content,
+        > #main-container .content,
+        > #page-footer .content {
+        max-width: $space-boxed;
+        }
     }
   }
 

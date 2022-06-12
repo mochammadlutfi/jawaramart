@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\VerifiesEmails;
+use Inertia\Inertia;
 
 class VerificationController extends Controller
 {
@@ -41,7 +42,8 @@ class VerificationController extends Controller
         $this->middleware('throttle:6,1')->only('verify', 'resend');
     }
 
-    public function show(Request $request){
-        return view('website.auth.verify');
+    public function show(Request $request)
+    {
+        return Inertia::render('Frontend/Auth/Verify');
     }
 }

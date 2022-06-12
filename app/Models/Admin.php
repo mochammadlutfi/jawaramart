@@ -8,10 +8,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Notifications\AdminEmailVerificationNotification;
 use App\Notifications\AdminResetPasswordNotification as Notification;
 use Spatie\Permission\Traits\HasRoles;
+
 class Admin extends Authenticatable implements MustVerifyEmail
 {
     use Notifiable;
     use HasRoles;
+    public function guardName()
+    {
+      return 'admin';
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -50,4 +55,20 @@ class Admin extends Authenticatable implements MustVerifyEmail
     {
         $this->notify(new AdminEmailVerificationNotification);
     }
+
+    
+    protected $appends = [
+        'avatar_url'
+    ];
+
+    
+    public function getAvatarUrlAttribute($value)
+    {
+        if($this->attributes['avatar']){
+            return asset($this->attributes['avatar']);
+        }else{
+            return asset('images/avatar.jpg');
+        }
+    }
+
 }

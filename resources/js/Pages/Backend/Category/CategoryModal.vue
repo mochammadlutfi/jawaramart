@@ -80,7 +80,7 @@
                 <b-button variant="primary" @click="close">Ok</b-button>
               </div>
             </div>
-          </b-modal>
+        </b-modal>
     </div>
 </template>
 <script>
@@ -104,12 +104,14 @@ export default {
         category_id : Number
     },
     watch: {
+        category_id(value){
+            if(value){
+                this.findCategoryTree();
+            }
+        },
     },
     mounted() {
-        if(this.category_id != null){
-            this.findCategoryTree();
-            console.log(this.category_id);
-        }
+        // alert(this.category_id);
         this.getCategory();
     },
     methods: {

@@ -115,7 +115,7 @@
 
 <script>
 import { Link } from '@inertiajs/inertia-vue';
-import BaseLayout from '@/Layouts/Authenticated.vue';
+import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import moment from 'moment';
 import _ from 'lodash';
 export default {

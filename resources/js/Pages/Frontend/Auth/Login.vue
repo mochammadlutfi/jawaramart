@@ -18,13 +18,10 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="field_login-password">Password
+                            <label class="form-label" for="field-password">Password Baru
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="password" v-bind:class="{'form-control':true, 'is-invalid' : errors.password}" id="login-password" v-model="form.password">
-                            <div v-if="errors.password" class="invalid-feedback">
-                                {{ errors.password[0] }}
-                            </div>
+                            <PasswordInput v-model="form.password" :error="errors.password" id="field-password"/>
                         </div>
                         <div class="form-group row mb-2">
                             <div class="col-sm-6 d-sm-flex align-items-center">
@@ -53,9 +50,11 @@
 
 <script>
 import BaseLayout from "@/layouts/frontend/BaseLayout";
+import PasswordInput from '@/Components/Form/PasswordInput';
 export default {
     components: {
         BaseLayout,
+        PasswordInput
     },
     props: {
         canResetPassword: Boolean,

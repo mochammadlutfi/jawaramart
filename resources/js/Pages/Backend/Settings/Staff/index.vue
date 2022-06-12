@@ -16,10 +16,10 @@
                         <i class="si si-trash"></i>
                         Delete {{ selected.length }} Selected
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" >
+                    <a :href="route('admin.settings.staff.create')" class="btn btn-sm btn-secondary" >
                         <i class="si si-plus"></i>
                         Create
-                    </button>
+                    </a>
                 </div>
             </div>
             <div class="block block-rounded block-shadow block-bordered d-md-block d-none mb-10">
@@ -64,6 +64,7 @@
                                         <label class="custom-control-label" for="checkAll"></label>
                                     </div>
                                 </th>
+                                <th>Avatar</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Role</th>
@@ -91,15 +92,19 @@
                                             <label class="custom-control-label" :for="data.id"></label>
                                         </label>
                                     </td> 
+                                    <td  width="45px"><img class="img-avatar  img-avatar32" style="max-width: 45px;" :src="data.avatar_url"></td>
                                     <td>{{ data.name }}</td>
                                     <td>{{ data.email }}</td>
                                     <td>{{ data.roles[0].name }}</td>
                                     <td>{{ format_date(data.created_at) }}</td>
                                     <th>
-                                        <button class="btn btn-secondary btn-sm" type="button">
-                                            <i class="si si-magnifier"></i>
-                                            Detail
-                                        </button>
+                                        <a class="btn btn-secondary btn-sm" :href="route('admin.settings.staff.edit', { id : data.id })" v-b-tooltip.hover.nofade.top="'Edit'">
+                                            <i class="si si-note"></i>
+                                        </a>
+                                        <b-button variant="secondary" v-b-tooltip.hover.nofade.top="'Delete'"
+                                            @click="destroy(data)" size="sm">
+                                            <i class="si si-trash"></i>
+                                        </b-button>
                                     </th>
                                 </tr>
                             </template>
@@ -118,7 +123,7 @@
 
 <script>
 import { Link } from '@inertiajs/inertia-vue';
-import BaseLayout from '@/Layouts/Authenticated.vue';
+import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import moment from 'moment';
 import _ from 'lodash';
 export default {
@@ -167,7 +172,23 @@ export default {
                     
                 });
 			}
-		}
+		},
+        destroy: function (data) {
+            this.$swal.fire({
+                icon: 'warning',
+                title: 'Are you sure?',
+                text: `You won't be able to revert this!`,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete it',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.$inertia.delete(this.route('admin.settings.staff.delete', data.id), {
+                        preserveScroll: true
+                    })
+                    this.reset();
+                }
+            })
+        },
     }
 }
 </script>

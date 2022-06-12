@@ -8,6 +8,12 @@ use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use App\Models\Admin;
 use Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Storage;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class StaffController extends Controller
 {
@@ -43,23 +49,62 @@ class StaffController extends Controller
     public function profile(Request $request)
     {
 
-        $user = Auth::user('admin');
+        $data = Admin::where('id', auth()->guard('admin')->user()->id)->first();
 
-        return Inertia::render('Backend/Settings/Staff/profile', [
-            'user' => $user->only('name', 'email'),
+        return Inertia::render('Backend/Settings/Staff/Profile', [
+            'data' => $data,
         ]);
     }
 
 
     public function updateProfile(Request $request)
     {
-        $user = Auth::user('admin');
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->save();
+        // dd($request->all());
+        $rules = [
+            'name' => 'required',
+            'username' => 'required|unique:admins,username,'.$request->id,
+            'email' => 'required|unique:admins,email,'.$request->id,
+        ];
 
-        if($user){
-            return redirect()->back()->with('message', 'Data Berhasil Diupdate!');
+        $pesan = [
+            'name.required' => 'Full Name must be filled.',
+            'username.required' => 'Username must be filled.',
+            'username.unique' => 'Username has already used.',
+            'email.required' => 'Email must be filled.',
+            'email.unique' => 'Email has already used.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $pesan);
+        if ($validator->fails()){
+            return back()->withErrors($validator->errors());
+        }else{
+            DB::beginTransaction();
+            try{
+                    $data = Admin::where('id', $request->id)->first();
+                    $data->name = $request->name;
+                    $data->username = $request->username;
+                    $data->email = $request->email;
+                    if($data->avatar != $request->avatar){
+                        if(Storage::disk('public')->exists($data->avatar))
+                        {
+                            Storage::disk('public')->delete($data->avatar);
+                        }
+                        if($request->hasFile('avatar')){
+                            $data->avatar = $this->uploadFiles($request->file('avatar'), Str::slug($request->username, '-'));
+                        }else{
+                            $data->avatar = null;
+                        }
+                    }
+                    $data->save();
+
+                    $data->assignRole($request->role);
+
+            }catch(\QueryException $e){
+                DB::rollback();
+                return back();
+            }
+            DB::commit();
+            return redirect()->route('admin.profile');
         }
 
     }
@@ -70,7 +115,12 @@ class StaffController extends Controller
      */
     public function create()
     {
-        return view('base::create');
+        $roles = Role::where('guard_name', 'admin')->latest()->get();
+
+        return Inertia::render('Backend/Settings/Staff/Form',[
+            'roles' => $roles,
+            'editMode' => false
+        ]);
     }
 
     /**
@@ -80,17 +130,56 @@ class StaffController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        // dd($request->all());
+        $rules = [
+            'name' => 'required',
+            'username' => 'required|unique:admins',
+            'email' => 'required|unique:admins',
+            'role' => 'required',
+            'password' => 'required|min:6|required_with:password_confirm|same:password_confirm',
+            'password_confirm' => 'required|min:6'
+        ];
 
-    /**
-     * Show the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
-    public function show($id)
-    {
-        return view('base::show');
+        $pesan = [
+            'name.required' => 'Full Name must be filled.',
+            'username.required' => 'Username must be filled.',
+            'username.unique' => 'Username has already used.',
+            'email.required' => 'Email must be filled.',
+            'email.unique' => 'Email has already used.',
+            'password.required' => 'Password must be filled.',
+            'password.min' => 'Password must be 6-20 characters.',
+            'password.same' => 'Password Confirmation does not match.',
+            'password_confirm.required' => 'Password Confirmation must be filled.',
+            'password_confirm.min' => 'Password must be 6-20 characters.',
+            'role.required' => 'Staff Role must be filled',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $pesan);
+        if ($validator->fails()){
+            return back()->withErrors($validator->errors());
+        }else{
+            DB::beginTransaction();
+            try{
+                    $data = new Admin();
+                    $data->name = $request->name;
+                    $data->username = $request->username;
+                    $data->email = $request->email;
+                    if(!empty($request->file('avatar'))){
+                        $data->avatar = $this->uploadFiles($request->file('avatar'), Str::slug($request->username, '-'));
+                    }
+                    $data->email = $request->email;
+                    $data->password = Hash::make($request->password);
+                    $data->save();
+
+                    $data->assignRole($request->role);
+
+            }catch(\QueryException $e){
+                DB::rollback();
+                return back();
+            }
+            DB::commit();
+            return redirect()->route('admin.settings.staff.index');
+        }
     }
 
     /**
@@ -100,7 +189,14 @@ class StaffController extends Controller
      */
     public function edit($id)
     {
-        return view('base::edit');
+        $data = Admin::with(['roles'])->where('id', $id)->first();
+        $roles = Role::where('guard_name', 'admin')->latest()->get();
+
+        return Inertia::render('Backend/Settings/Staff/Form',[
+            'roles' => $roles,
+            'data' => $data,
+            'editMode' => true
+        ]);
     }
 
     /**
@@ -109,9 +205,57 @@ class StaffController extends Controller
      * @param int $id
      * @return Renderable
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $rules = [
+            'name' => 'required',
+            'username' => 'required|unique:admins,username,'.$request->id,
+            'email' => 'required|unique:admins,email,'.$request->id,
+            'role' => 'required',
+        ];
+
+        $pesan = [
+            'name.required' => 'Full Name must be filled.',
+            'username.required' => 'Username must be filled.',
+            'username.unique' => 'Username has already used.',
+            'email.required' => 'Email must be filled.',
+            'email.unique' => 'Email has already used.',
+            'role.required' => 'Staff Role must be filled',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $pesan);
+        if ($validator->fails()){
+            return back()->withErrors($validator->errors());
+        }else{
+            DB::beginTransaction();
+            try{
+                    $data = Admin::where('id', $request->id)->first();
+                    $data->name = $request->name;
+                    $data->username = $request->username;
+                    $data->email = $request->email;
+                    if($data->avatar != $request->avatar){
+                        if(Storage::disk('public')->exists($data->avatar))
+                        {
+                            Storage::disk('public')->delete($data->avatar);
+                        }
+                        if($request->hasFile('avatar')){
+                            $data->avatar = $this->uploadFiles($request->file('avatar'), Str::slug($request->username, '-'));
+                        }else{
+                            $data->avatar = null;
+                        }
+                    }
+                    $data->email = $request->email;
+                    $data->save();
+
+                    $data->assignRole($request->role);
+
+            }catch(\QueryException $e){
+                DB::rollback();
+                return back();
+            }
+            DB::commit();
+            return redirect()->route('admin.settings.staff.index');
+        }
     }
 
     /**
@@ -121,6 +265,28 @@ class StaffController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $data = Admin::where('id', $id)->first();
+        $cek = Storage::disk('public')->exists($data->avatar);
+        if($cek)
+        {
+            Storage::disk('public')->delete($data->avatar);
+        }
+        $hapus_db = Admin::destroy($data->id);
+        if($hapus_db)
+        {
+            return redirect()->route('admin.settings.staff.index');
+        }
+    }
+
+    
+    private function uploadFiles($file, $name){
+        $file_name = $name. '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+        Storage::disk('public')->putFileAs(
+            'uploads/staff',
+            $file,
+            $file_name
+        );
+        
+        return 'uploads/staff/'.$file_name;
     }
 }

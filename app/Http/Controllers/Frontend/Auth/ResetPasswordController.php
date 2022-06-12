@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use DB;
 use Str;
+use Inertia\Inertia;
 class ResetPasswordController extends Controller
 {
     /*
@@ -36,28 +37,26 @@ class ResetPasswordController extends Controller
 
     public function showResetForm($token, Request $request)
     {
-        return view("website.auth.passwords.reset", compact("token"));
+        return Inertia::render('Frontend/Auth/Passwords/Reset',[
+            'token' => $token
+        ]);
+        // return view("website.auth.passwords.reset", compact("token"));
     }
 
 
     public function reset(Request $request)
     {
-        // dd($request->all());
         $rules = [
-            'password' => 'required|string|confirmed'
+            'password' => 'required|string|same:password_confirmation'
         ];
 
         $pesan = [
             'password.required' => 'Password Baru Wajib Diisi!',
-            'password.confirmed' => 'Password baru yang dimasukan tidak sama!',
+            'password.same' => 'Password baru yang dimasukan tidak sama!',
         ];
         $validator = Validator::make($request->all(), $rules, $pesan);
         if ($validator->fails()){
-            return response()->json([
-                'fail' => true,
-                'msg' => 'Terdapat Kesalahan Di Form!',
-                'errors' => $validator->errors(),
-            ]);
+            return back()->withErrors($validator->errors());
         }else{
             
             // DB::beginTransaction();
@@ -79,36 +78,10 @@ class ResetPasswordController extends Controller
                 );
                 
                 if($status === Password::PASSWORD_RESET){
-                    return response()->json([
-                        'fail' => false,
-                    ]);
+                    return back();
                 }else{
-                    return response()->json([
-                        'fail' => true,
-                        'status' => $status,
-                    ]);
+                    return redirect()->route('login');
                 }
-                // ? redirect()->route('login')->with('status', __($status))
-                // : back()->withErrors(['email' => [__($status)]]);
-                // dd($status);
-
-                // $reset_password_status = Password::reset($credentials, function ($user, $password) {
-                    // $user->password = $password;
-                    // $user->save();
-                // });
-            // }catch(\QueryException $e){
-            //     DB::rollback();
-            //     return response()->json([
-            //         'fail' => true,
-            //         'pesan' => 'Error Menyimpan Data',
-            //         'log' => $e,
-            //     ]);
-            // }
-
-            // DB::commit();
-            // return response()->json([
-            //     'fail' => false,
-            // ]);
         }
     }
 }

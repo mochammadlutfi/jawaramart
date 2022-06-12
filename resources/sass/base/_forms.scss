@@ -9,3 +9,45 @@ label {
 .invalid-feedback {
   font-size: $font-size-sm;
 }
+
+
+.input-group.style-2{
+
+    height: $input-height;
+    width: 100%;
+    @include border-radius($input-border-radius, 0);
+    border: $input-border-width solid $input-border-color;
+    padding: 2px;
+
+    .input-group-icon {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-align: center;
+        align-items: center;
+        padding: 0.4285714rem 1rem;
+        margin-bottom: 0;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.428572;
+        color: #575757;
+        text-align: center;
+        border-radius: 0.25rem;
+    }
+
+    .form-control{
+        // padding-left: 2.375rem;
+        border: none;
+        height: 100%;
+    }
+    .input-group-append {
+        height: 100%;
+        margin:0;
+    }
+
+    // .input-group-icon {
+    // }
+}
+
+// .input-group:focus-within {
+//     border-color: 1px solid #97a5ba;
+// }

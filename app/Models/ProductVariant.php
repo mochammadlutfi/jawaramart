@@ -24,6 +24,18 @@ class ProductVariant extends Model
         return $this->hasMany(Product::class, 'product_id');
     }
 
+    
+    public function stock()
+    {
+        return $this->hasMany(ProductStock::class, 'product_id');
+    }
+
+    
+    public function line()
+    {
+        return $this->hasOne(SaleLine::class, 'variant_id');
+    }
+
     // public function setHargaAttribute($value)
     // {
     //     return "Rp" .number_format($value,0,',','.');

@@ -59,18 +59,26 @@ class ProductCategory extends Model
     public function getSlugOptions() : SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('title')
+            ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
     }
 
+    // public function getThumbnailAttribute()
+    // {
+    //     if( $this->attributes['thumbnail'] !== null){
+    //         return $this->attributes['thumbnail'];
+    //     }else{
+    //         return 'media/placeholder/category.png';
+    //     }
+    // }
 
     public function getThumbnailUrlAttribute()
     {
-        if($this->thumbnail){
+        if(file_exists( public_path() . '/' . $this->thumbnail) && $this->thumbnail !== null){
             return asset($this->thumbnail);
-        }else{
-            return null;
         }
+
+        return asset('media/placeholder/category.png');
     }
 
     public function getCreatedAtAttribute($value)

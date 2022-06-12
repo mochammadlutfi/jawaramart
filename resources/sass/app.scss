@@ -105,13 +105,17 @@
 @import '~sweetalert2/dist/sweetalert2.min.css';
 @import 'vendor/simplebar';
 @import 'vendor/simple-line-icons';
-@import 'vendor/font-awesome';
+@import 'vendor/font-awesome5';
 @import '~@egjs/vue-flicking/dist/flicking.css';
 @import 'custom/uicons-regular-straight';
 
 
 @import "@egjs/flicking-plugins/dist/arrow.css";
 @import "@egjs/flicking-plugins/dist/pagination.css";
+
+@import "vue-select/src/scss/vue-select.scss";
+// @import 'vendor/vue-select';
+@import 'flatpickr/dist/flatpickr.css';
 // RTL Support
 @import 'base/rtl-support';
 
@@ -121,6 +125,7 @@
 @import 'custom/product';
 @import 'custom/slider';
 @import 'custom/cart';
-
+@import 'custom/user';
+@import 'custom/pos';
 
 @import 'https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700,800,900';

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Backend;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductImage;
+use App\Models\ProductStock;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Storage;
 
+
+use Intervention\Image\Facades\Image;
+
+use App\Helpers\Collection;
 class ProductController extends Controller
 {
     public function __construct()
@@ -28,13 +33,35 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $dataList = Product::when($request->search, function($query, $search){
+        $search = $request->search;
+        $sort = ($request->sort) ? $request->sort : 'name';
+        $sort_dir = ($request->sortDir) ? $request->sortDir : 'asc';
+
+
+        $res = Product::select('id', 'name', 'show_web', 'slug', 'category_id', 'brand_id')
+        ->withCount([
+            'stock' => function ($query) {
+                $query->select(DB::raw("SUM(stock)"));
+            },
+            'sale'
+        ])
+        ->with([
+            'variant'
+        ])
+        ->when($search, function($query, $search){
             $query->where('name', 'LIKE', '%' . $search . '%');
-        })
-        ->orderBy('id', 'desc')->paginate(6);
+        })->get();
+
+        if($sort_dir == 'asc'){
+            $sorted = $res->sortBy($sort);
+        }else{
+            $sorted = $res->sortByDesc($sort);
+        }
+
+        $data = (new Collection($sorted->values()))->paginate(10);
  
         return Inertia::render('Backend/Product/index', [
-            'dataList' => $dataList
+            'dataList' => $data
         ]);
     }
 
@@ -68,27 +95,14 @@ class ProductController extends Controller
             'category_id.required' => 'Kategori Produk Wajib Diisi!',
         ];
 
-        if($request->has_variant == 0)
+        if(count($request->variant) > 1)
         {
+        }else{
             $rules['sell_price'] = 'required';
             $rules['purchase_price'] = 'required';
 
             $pesan['sell_price.required'] = 'Harga Jual Produk Wajib Diisi!';
             $pesan['purchase_price.required'] = 'Harga Beli Produk Wajib Diisi!';
-        }else{
-            $rules['var1_name'] = 'required';
-            $rules['var1_value'] = 'required';
-
-            $pesan['var1_nama.required'] = 'Nama Variasi Produk Wajib Diisi!';
-            $pesan['var1_value.required'] = 'Pilihan Variasi Produk Wajib Diisi!';
-            if($request->var2_name)
-            {
-                $rules['var2_name'] = 'required';
-                $rules['var2_value'] = 'required';
-
-                $pesan['var2_name.required'] = 'Nama Variasi Produk Wajib Diisi!';
-                $pesan['var2_value.required'] = 'Pilihan Variasi Produk Wajib Diisi!';
-            }
         }
 
         $validator = Validator::make($request->all(), $rules, $pesan);
@@ -194,7 +208,6 @@ class ProductController extends Controller
      */
     public function update(Request $request)
     {
-        // dd($request->images);
         $rules = [
             'name' => 'required',
             // 'description' => 'required',
@@ -208,28 +221,29 @@ class ProductController extends Controller
             'category_id.required' => 'Kategori Produk Wajib Diisi!',
         ];
 
-        if($request->has_variant == 0)
-        {
-            $rules['sell_price'] = 'required';
-            $rules['purchase_price'] = 'required';
+        // if(count($request->variant) > 1)
+        // {
+            
+        //     $rules['var1_name'] = 'required';
+        //     $rules['var1_value'] = 'required';
 
-            $pesan['sell_price.required'] = 'Harga Jual Produk Wajib Diisi!';
-            $pesan['purchase_price.required'] = 'Harga Beli Produk Wajib Diisi!';
-        }else{
-            $rules['var1_name'] = 'required';
-            $rules['var1_value'] = 'required';
+        //     $pesan['var1_nama.required'] = 'Nama Variasi Produk Wajib Diisi!';
+        //     $pesan['var1_value.required'] = 'Pilihan Variasi Produk Wajib Diisi!';
+        //     if($request->var2_name)
+        //     {
+        //         $rules['var2_name'] = 'required';
+        //         $rules['var2_value'] = 'required';
 
-            $pesan['var1_nama.required'] = 'Nama Variasi Produk Wajib Diisi!';
-            $pesan['var1_value.required'] = 'Pilihan Variasi Produk Wajib Diisi!';
-            if($request->var2_name)
-            {
-                $rules['var2_name'] = 'required';
-                $rules['var2_value'] = 'required';
+        //         $pesan['var2_name.required'] = 'Nama Variasi Produk Wajib Diisi!';
+        //         $pesan['var2_value.required'] = 'Pilihan Variasi Produk Wajib Diisi!';
+        //     }
+        // }else{
+        //     $rules['sell_price'] = 'required';
+        //     $rules['purchase_price'] = 'required';
 
-                $pesan['var2_name.required'] = 'Nama Variasi Produk Wajib Diisi!';
-                $pesan['var2_value.required'] = 'Pilihan Variasi Produk Wajib Diisi!';
-            }
-        }
+        //     $pesan['sell_price.required'] = 'Harga Jual Produk Wajib Diisi!';
+        //     $pesan['purchase_price.required'] = 'Harga Beli Produk Wajib Diisi!';
+        // }
 
         $validator = Validator::make($request->all(), $rules, $pesan);
         if ($validator->fails()){
@@ -237,6 +251,7 @@ class ProductController extends Controller
         }else{
             DB::beginTransaction();
             try{
+                // dd($request->all());
                 $product = Product::find($request->id);
                 $product->name = $request->name;
                 $product->description = $request->description;
@@ -245,25 +260,27 @@ class ProductController extends Controller
                 $product->save();
 
                 if($request->has_variant == 0){
-                    if($product->variant->count() > 1){
-                        $product->variant()->delete();
-                    }
-                    $variant = new ProductVariant();
-                    $variant->sell_price = $request->sell_price;
-                    $variant->purchase_price = $request->purchase_price;
-                    $variant->sku = $request->sku;
-                    $variant->product_id = $product->id;
+
+                    $variant = ProductVariant::firstOrNew(['id' =>  $request->variant[0]['id'], 'product_id' => $product->id]);
+                    $variant->sell_price = $request->variant[0]['sell_price'];
+                    $variant->purchase_price = $request->variant[0]['purchase_price'];
+                    $variant->sku = $request->variant[0]['sku'];
                     $variant->save();
+
                 }else{
+
                     if($product->variant()->count() == 1){
                         $product->variant()->delete();
                     }
+
                     $product->var1_name = $request->var1_name;
                     $product->var1_value = json_encode($request->var1_value);
+
                     if(!empty($request->var2_value)){
                         $product->var2_name = $request->var2_name;
                         $product->var2_value = json_encode($request->var2_value);
                     }
+
                     $product->save();
 
                     foreach($request->variant as $v){
@@ -271,10 +288,12 @@ class ProductController extends Controller
                             'product_id' => $product->id,
                             'variant' => $v['var1'],
                         ];
+
                         if(!empty($request->var2_value)){
                             $params['variant2'] = $v["var2"];
                         }
-                        ProductVariant::updateOrCreate($params,[
+
+                        ProductVariant::firstOrNew($params, [
                             'sell_price' => $v["sell_price"],
                             'purchase_price' => $v["purchase_price"], 
                             'sku' => $v["sku"]
@@ -321,7 +340,7 @@ class ProductController extends Controller
                 return back();
             }
             DB::commit();
-            return back();
+            return redirect()->route('admin.product.edit', $product->id);
         }
     }
 
@@ -332,13 +351,96 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $product = Product::where('id', $id)->first();
+
     }
+
+
+    public function import(){
+        $filepath = public_path('product.csv');
+        // Reading file
+        $file = fopen($filepath, "r");
+        $importData_arr = array(); // Read through the file and store the contents as an array
+        $i = 0;
+        //Read the contents of the uploaded file 
+        while (($filedata = fgetcsv($file, 1000, ";")) !== FALSE) {
+            $num = count($filedata);
+            if ($i == 0) {
+            $i++;
+            continue;
+            }
+            for ($c = 0; $c < $num; $c++) {
+                $importData_arr[$i][] = $filedata[$c];
+            }
+            $i++;
+        }
+        fclose($file);
+        
+        $j = 0;
+        $no = 1;
+        // dd($importData_arr);
+        foreach ($importData_arr as $importData) {
+            $sku = $importData[0];
+            $name = $importData[1];
+            $stock = (int)$importData[2];
+            $sell_price = (int)$importData[3];
+            $purchase_price = (int)$importData[4];
+            $unit = $importData[5];
+            // $weight = (int)$importData[6];
+            $lenght = $importData[6];
+            $width = $importData[7];
+            $height = $importData[8];
+            $category_id = (int)$importData[9];
+            $j++;
+            DB::beginTransaction();
+            try{
+
+                $product = new Product();
+                $product->name = $name;
+                $product->category_id = $category_id;
+                // $product->brand_id = $brand_id;
+                $product->has_variant = 0;
+                $product->berat = 0;
+                $product->berat_satuan = $unit;
+                $product->panjang = empty($lenght) ? 0 : $lenght;
+                $product->lebar = empty($width) ? 0 : $width;
+                $product->tinggi = empty($height) ? 0 : $height;
+                $product->save();
+
+                $variant = new ProductVariant();
+                $variant->sell_price = $sell_price;
+                $variant->purchase_price = $purchase_price;
+                $variant->sku = $sku;
+                $res = $product->variant()->save($variant);
+                
+                $stock_fil = new ProductStock();
+                $stock_fil->product_id = $res->id;
+                $stock_fil->variant_id = $res->product_id;
+                $stock_fil->stock = $stock;
+                $stock_fil->save();
+
+            }catch(\QueryException $e){
+                DB::rollback();
+                dd($e);
+            }
+            DB::commit();
+        }
+        echo 'done';
+    }
+    
 
     
     
     private function uploadImage($file, $name, $id){
         $file_name = $name. '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $imgFile = Image::make($file->getRealPath());
+        $destinationPath = 'public/uploads/product/images/'.$id;
+
+        $imgFile->resize(800, 800, function ($constraint) {
+		    $constraint->aspectRatio();
+		})->encode('jpg', 80);
+
+        
         Storage::disk('public')->putFileAs(
             'uploads/product/images/'.$id,
             $file,
@@ -356,6 +458,42 @@ class ProductController extends Controller
             return true;
         }
         return false;
+    }
+    
+    public function data(Request $request)
+    {
+        $search = $request->search;
+
+        $query = Product::with('variant')
+        ->withCount([
+            'stock' => function ($query) {
+                $query->select(DB::raw("IFNULL(SUM(stock), 0)"));
+            }
+        ])
+        ->whereHas('variant', function ($query) use ($search) {
+            $query->where('sku', 'LIKE', '%' . $search . '%');
+        })
+        ->orderBy('name', 'asc');
+
+        
+        $query->when(!empty($search), function ($q) use ($search) {
+            return $q->orWhere('name', 'LIKE', '%' . $search . '%');
+        }); 
+            // dd('sad');
+        $data = $query->paginate(8);
+        if($data){
+            return response()->json([
+                'data' => $data,
+                'fail' => false,
+            ], 200);
+        }else{
+
+            return response()->json([
+                'message' => "Product Not Found",
+                'fail' => false,
+            ], 400);
+
+        }
     }
 
 }

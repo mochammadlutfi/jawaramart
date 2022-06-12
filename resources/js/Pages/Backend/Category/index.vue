@@ -57,7 +57,7 @@
                                     <div class="col-lg-7">
                                         <div class="col-6 pl-0">
                                             <ImageUpload 
-                                            :image="thumbnail != null ? asset(thumbnail) : thumbnail" :ratio="1/1"
+                                            :image="thumbnail != null ? asset(thumbnail) : thumbnail" :ratio="1/1" :height="185"
                                             @done="(image) => form.image = image"
                                             @removeImage="(image) => form.image = image" />
                                         </div>
@@ -75,7 +75,7 @@
 <script>
 // import treeview from "vue3-treeview";
 import VJstree from 'vue-jstree'
-import BaseLayout from '../Layouts/Authenticated.vue';
+import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import ImageUpload from '@/components/SingleImageUpload.vue'
 
 export default {

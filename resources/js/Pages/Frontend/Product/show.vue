@@ -1,30 +1,53 @@
 <template>
-    <BaseLayout>
+    <BaseLayout routeBack="home">
     
         <Head>
             <title>Jual {{ data.name }}</title>
             <meta name="description" content="Your page description">
         </Head>
-
-        <div class="content content-full">
+        <div class="content content-full product_detail">
             <div class="row">
-                <div class="col-4">
-                    <flicking ref="flicking0" :options="{ bounce: 30, disableOnInit: true}" :plugins="plugins">
-                        <div class="flicking-panel has-background-primary" v-for="(image, index) in data.images" :key="index">
-                            <img class="panel-image img-fluid" :src="asset(image.path)" />
+                <div class="col-lg-6">
+                    <div class="product-img-detail">
+                        <div class="product-img-nav">
+                            <flicking ref="flicking1" :options="{ bound: true, bounce: 30, moveType: 'freeScroll', align : 'prev' }" :class="{ 'd-none' : $root.window.mobile }">
+                                <div class="flicking-panel thumb has-background-primary" v-for="(thumb, iThumb) in data.images" :key="iThumb">
+                                    <img class="thumb-image" :src="asset(thumb.path)" />
+                                </div>
+                            </flicking>
                         </div>
-                    </flicking>
-                    <flicking ref="flicking1" :options="{ bound: true, bounce: 30, moveType: 'freeScroll', align : 'prev' }">
-                        <div class="flicking-panel thumb has-background-primary" v-for="(thumb, iThumb) in data.images" :key="iThumb">
-                            <img class="thumb-image" :src="asset(thumb.path)" />
-                        </div>
-                    </flicking>
+                        <flicking ref="flicking0" :options="{ bounce: 30, disableOnInit: true}" :plugins="plugins">
+                            <template v-if="data.images.length">
+                                <div class="flicking-panel has-background-primary" v-for="(image, index) in data.images" :key="index">
+                                    <img class="panel-image img-fluid" :src="asset(image.path)" />
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="flicking-panel has-background-primary">
+                                    <img class="panel-image img-fluid" :src="asset('media/placeholder/product.png')" />
+                                </div>
+                            </template>
+                        </flicking>
+                    </div>
                 </div>
-                <div class="col-8">
+                <div class="col-lg-6">
                     <div class="product-info">
-                        <h1 class="product-title">
+                        <h2 class="product-title">
                             {{ data.name }}
-                        </h1>
+                        </h2>
+                        <div class="product-meta">
+                            <div class="">
+                                Terjual <span>{{ data.sale_count }}</span>
+                            </div>
+                            <div class="">
+                                <template v-if="data.reviews.length > 0">
+                                    {{ data.reviews.length }} Ulasan
+                                </template>
+                                <template v-else>
+                                    Belum Ada Ulasan
+                                </template>
+                            </div>
+                        </div>
                         <div class="product-price">
                             <div class="product-price_final">
                                 {{ currency(data.sell_price) }}
@@ -55,62 +78,87 @@
                             </label>
                         </div>
                     </div>
-                    <div class="py-20">
-                        <product-qty @change="(qty) => product.qty = qty"></product-qty>
-                    </div>
-                    <button @click="addCart" type="button" class="btn btn-primary btn-lg btn-noborder">
-                        <i class="fi-rs-shopping-cart"></i>
-                        Masukan Keranjang
-                    </button>
+                    <template v-if="!$root.window.mobile">
+                        <div class="py-20">
+                            <product-qty @change="(qty) => product.qty = qty"></product-qty>
+                        </div>
+
+                        <button @click="addCart" type="button" class="btn btn-primary btn-lg btn-noborder btn-block">
+                            <i class="fi-rs-shopping-bag-add"></i>
+                            Masukan Keranjang
+                        </button>
+
+                        <div class="row mt-3">
+                            <div class="col-lg-6">
+                                <button type="button" class="btn btn-wishlist btn-lg btn-block" :class="[{'active' : data.is_wishlist }]" @click="addWishlist">
+                                    <svg :fill="data.is_wishlist == 1 ? 'currentColor' : 'none'"  viewBox="0 0 28 28" class="text-2xl" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" stroke="currentColor" stroke-linecap="round"
+                                            stroke-linejoin="round" stroke-width="1"
+                                            d="M11.995 7.23319C10.5455 5.60999 8.12832 5.17335 6.31215 6.65972C4.49599 8.14609 4.2403 10.6312 5.66654 12.3892L11.995 18.25L18.3235 12.3892C19.7498 10.6312 19.5253 8.13046 17.6779 6.65972C15.8305 5.18899 13.4446 5.60999 11.995 7.23319Z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                    Whishlist
+                                </button>
+                            </div>
+                            <div class="col-lg-6">
+                                <button type="button" class="btn btn-share btn-lg btn-block">
+                                    <i class="fi fi-rs-share"></i>
+                                    Share
+                                </button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
-        <div class="bg-body">
-            <div class="content content-full">
-                <div class="block">
-                    <ul class="nav nav-tabs nav-tabs-alt">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#product-description">Description
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#product-reviews">Review
-                            </a>
-                        </li>
-                    </ul>
-                    <div class="block-content block-content-full" id="product-description">
-                        {{ data.description }}
-                    </div>
-                    <div class="block-content block-content-full" id="product-reviews">
-                        <div class="py-2">
-                            <h4 class="h4 mb0">Reviews</h4>
-                        </div>
-                        <template v-if="data.reviews.length > 0">
-                        </template>
-                        <template v-else>
-                            <div class="border">
-                                Belum ada ulasan.
-                            </div>
-                        </template>
-                    </div>
+
+        
+        <div class="content content-full">
+            <div class="block block-transparent">
+                <ul class="nav nav-tabs nav-tabs-alt">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#product-description">Deskripsi
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#product-reviews">Ulasan
+                        </a>
+                    </li>
+                </ul>
+                <div class="block-content px-0" id="product-description">
+                    <h3 class="font-size-h5">Deskripsi</h3>
+                    <p class="nice-copy">{{ data.name }}</p>
+                    <div class="nice-copy-story" :v-html="data.description"></div>
                 </div>
+                <product-review ref="product-review" id="product-review"/>
+            </div>
+        </div>
+
+        <div class="product-action" v-if="$root.window.mobile">
+            <div class="product-action-wrap">
+                <div>
+                    <product-qty @change="(qty) => product.qty = qty"></product-qty>
+                </div>
+                <button @click="addCart" type="button" class="btn btn-primary btn-lg btn-noborder">
+                    <i class="fi-rs-shopping-cart"></i>
+                    Masukan Keranjang
+                </button>
             </div>
         </div>
     </BaseLayout>
 </template>
-
 <script>
 import BaseLayout from "@/layouts/frontend/BaseLayout";
 import { Flicking } from "@egjs/vue-flicking";
 import { Sync } from "@egjs/flicking-plugins";
 import ProductQty from "@/components/Product/ProductQty.vue";
-import { Head } from '@inertiajs/inertia-vue';
-import axios from 'axios';
+import ProductReview from "./ProductReview.vue";
 export default {
     components: {
         BaseLayout,
         Flicking,
         ProductQty,
+        ProductReview
     },
     props : {
         data : Object,
@@ -160,24 +208,29 @@ export default {
         })];
     },
     methods:{
-        // async addCart(){
-        //     await axios.post(this.route('cart.store'), this.product)
-        //     .then(function (response) {
-        //         var resp = response.data;
-        //         // this.$page.props.cart
-        //     })
-        //     .catch(function (error) {
-                
-        //     })
-        //     if(this.$page.props.auth.user){
-        //         // console.log('coba');
-        //         // console.log();
-        //         // alert('Tambah Cart');
-        //     }else{
-        //         // alert('as');
-        //         window.location = this.route('login')
-        //     }
-        // },
+        addWishlist(){
+            if(this.$page.props.auth.user){
+                let form = this.$inertia.form({
+                    'product_id' : this.data.id,
+                    'ref' : this.route().current()
+                });
+                form.post(this.route('user.wishlist.store'), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        return this.$swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text : (this.data.is_wishlist) ? 'Produk berhasil disimpan di wishlist' : 'Produk berhasil dihapus dari wishlist',
+                            showCancelButton: false,
+                            showConfirmButton: false,
+                            timer: 3000,
+                        });
+                    },
+                });
+            }else{
+                window.location = this.route('login')
+            }
+        },
 
         addCart(){
             if(this.$page.props.auth.user){
@@ -187,9 +240,10 @@ export default {
                     onSuccess: () => {
                         return this.$swal.fire({
                             icon: 'success',
-                            title: 'Success',
-                            text: `Product Saved Successfully!`,
+                            title: 'Berhasil ditambahkan!',
                             showCancelButton: false,
+                            showConfirmButton: false,
+                            timer: 3000,
                         });
                     },
                 });
@@ -204,6 +258,78 @@ export default {
 </script>
 
 <style>
+.product-img-detail{
+    display: flex;
+    align-items: flex-start;
+    margin-right: 30px;
+}
+
+.product-img-nav{
+    width: 91px;
+    flex: 0 0 91px;
+    margin-right: 20px;
+}
+
+.product-action{
+    --color-shadow: 0 1px 4px 0 rgba(141,150,170,0.4);
+    display: block;
+    overflow: hidden;
+    background-color: var(--NN50,#FFFFFF);
+    padding: 10px 0px;
+    transition-property: background-color, border-color, box-shadow;
+    transition-duration: 120ms;
+    transition-timing-function: cubic-bezier(0.2, 0.64, 0.21, 1);
+    position: fixed;
+    width: 100%;
+    max-width: 500px;
+    height: 60px;
+    bottom: 0px;
+    z-index: 2;
+    border-radius: 0px;
+    box-shadow: rgb(49 53 59 / 12%) 0px -1px 6px;
+    margin: 0px auto !important;
+}
+
+.product-action .product-action-wrap{
+    width: 100%;
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    -webkit-box-align: center;
+    align-items: center;
+}
+
+@media only screen and (max-width: 768px) {
+    .product_detail{
+        padding: 0px !important;
+    }
+
+    .product_detail .search-header{
+        display: flex;
+        flex: 2;
+    }
+
+    .product_detail .flicking-panel {
+        padding: 0 !important;
+    }
+
+    .product-info{
+        background-color: #fff;
+        border-radius: 0 0 16px 16px;
+        position: relative;
+        padding: 12px 16px;
+    }
+
+    .product-info .product-title {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+    }
+
+    .product-info .product-price .product-price_final {
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+}
 
 .product-variant{
     padding: 24px 0;
@@ -214,13 +340,24 @@ export default {
     height: 100%;
     display: flex;
     border-radius: 5px;
-    margin-right: 10px;
-    margin-bottom: 10px;
+    /* margin-right: 10px; */
+    /* margin-bottom: 10px; */
     align-items: flex-end;
-    padding: 30px 20px;
+    /* padding: 30px 20px; */
     box-sizing: border-box;
     position: relative;
+    border: 1px solid #e7ecf0;
 }
+
+.flicking-panel img{
+    border-radius: 5px;
+}
+
+.flicking-panel .thumb {
+    border-radius: 3px;
+    border: 1px solid #e7ecf0;
+}
+
 .flicking-viewport {
     width: 100%;
     margin-left: auto;
@@ -228,6 +365,7 @@ export default {
     position: relative;
     overflow: hidden;
 }
+
 .flicking-camera {
     width: 100%;
     height: 100%;
@@ -245,19 +383,46 @@ export default {
 }
 
 .flicking-panel.thumb.active {
-    border: 2px solid #48c78e;
+    border: 1px solid #3f9ce8;
 }
 
-.flicking-panel.thumb {
-    padding: 0;
-    width: 20%;
-    height: 20%;
-    margin-bottom: 0;
-    cursor: pointer;
-}
 .flicking-panel .thumb-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
+
+.btn-wishlist, .btn-share{
+    background-color: transparent;
+    background-image: none;
+    border-color: #dee5ea;
+    font-size: 1.2rem;
+    color : #4c5664;
+}
+
+.btn-wishlist:hover{
+    color: #f65a75;
+    background-color: rgb(255 241 242/1);
+    border-color: rgb(255 241 242/0);
+}
+
+.btn-wishlist.active{
+    color: #f65a75;
+    background-color: rgb(255 241 242/1);
+    border-color: rgb(255 241 242/0);
+}
+
+.btn-wishlist svg{
+    transform: scale(2);
+}
+
+.btn-wishlist:hover svg{
+    fill: currentColor;
+}
+
+.btn-share:hover{
+    color: #3f9ce8;
+    background-color: #eff6ff;
+}
+
 </style>

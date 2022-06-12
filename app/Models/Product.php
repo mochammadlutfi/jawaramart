@@ -23,7 +23,7 @@ class Product extends Model
     ];
 
     protected $appends = [
-        'main_image', 'sell_price',
+        'main_image', 'sell_price', 'sell_max_price'
     ];
 
     
@@ -39,18 +39,39 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class, 'product_id');
     }
 
+    public function stock()
+    {
+        return $this->hasMany(ProductStock::class, 'product_id');
+    }
+    
+    public function sale()
+    {
+        return $this->hasOne(SaleLine::class, 'product_id');
+    }
+
+    public function purchase()
+    {
+        return $this->hasOne(Purchase::class, 'product_id');
+    }
 
     public function getSellPriceAttribute()
     {
         $variant = $this->hasMany(ProductVariant::class, 'product_id');
         if($variant->count() > 1)
         {
-            if($variant->min('sell_price') === $variant->max('sell_price'))
-            {
-                return (int)$variant->max('sell_price');
-            }else{
-                return (int)$variant->min('sell_price').' - '.$variant->max('sell_price');
-            }
+            return (int)$variant->min('sell_price');
+
+        }else{
+            return (int)$variant->first()->sell_price;
+        }
+    }
+
+    public function getSellMaxPriceAttribute()
+    {
+        $variant = $this->hasMany(ProductVariant::class, 'product_id');
+        if($variant->count() > 1)
+        {
+            return (int)$variant->max('sell_price');
         }else{
             return (int)$variant->first()->sell_price;
         }

@@ -4,7 +4,7 @@
             <h3 class="h3 mb-0">Popular Product</h3>
         </div>
         <div class="row mx-0">
-            <div class="col-4 col-lg-2 col-md-2 mb-15 px-5" v-for="(data, index) in products" :key="index">
+            <div class="col-6 col-lg-2 col-md-2 mb-15 px-5" v-for="(data, index) in products" :key="index">
                 <div class="product">
                     <div class="product-content">
                         <div class="product-img">

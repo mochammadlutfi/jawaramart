@@ -1,5 +1,7 @@
 const mix = require('laravel-mix');
 const path = require('path');
+// const NodePolyfillPlugin = require("node-polyfill-webpack-plugin") 
+
 /*
  |--------------------------------------------------------------------------
  | Mix Asset Management
@@ -12,6 +14,7 @@ const path = require('path');
  */
 
 mix.js('resources/js/app.js', 'public/js')
+    .js('resources/js/admin.js', 'public/js')
     .vue()
     .sass('resources/sass/app.scss', 'public/css')
     .browserSync('localhost:8000')
@@ -21,11 +24,26 @@ mix.js('resources/js/app.js', 'public/js')
     })
     .webpackConfig({
         output: { chunkFilename: 'js/[name].[contenthash].js' },
+        plugins: [
+            // new NodePolyfillPlugin(),
+        ],
         resolve: {
-          alias: {
-            vue$: 'vue/dist/vue.runtime.js',
-            '@': path.resolve('resources/js'),
-            ziggy: path.resolve('vendor/tightenco/ziggy/dist'),
-          },
+            fallback: {
+                // fs: require.resolve('browserify-fs'),
+                // path: require.resolve("path-browserify"),
+                // "path": require.resolve("path-browserify"),
+                // "stream": require.resolve("stream-browserify"),
+                // "zlib": require.resolve("browserify-zlib"),
+                // "http": require.resolve("stream-http"),
+                // "timers": require.resolve("timers-browserify"),
+                // "constants": require.resolve("constants-browserify"),
+                // "crypto": false,
+                // fs: require.resolve('browserify-fs'),
+            },
+            alias: {
+                vue$: 'vue/dist/vue.runtime.js',
+                '@': path.resolve('resources/js'),
+                ziggy: path.resolve('vendor/tightenco/ziggy/dist'),
+            },
         },
       });

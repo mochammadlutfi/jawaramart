@@ -83,7 +83,7 @@ class LoginController extends Controller
                 return redirect()->intended(RouteServiceProvider::HOME);
             }else{
                 $gagal['password'] = array('Password salah!');
-                return back()->withErrors($validator->errors());
+                return back()->withErrors($gagal);
             }
         }
 

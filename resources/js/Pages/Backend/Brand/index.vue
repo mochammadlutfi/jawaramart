@@ -147,7 +147,7 @@
                             <div class="row">
                                 <div class="col-4">
                                     <ImageUpload :image="(typeof form.image === 'string') ? asset(form.image) : null"
-                                        :height="'135px'" :ratio="1/1" @done="(image) => form.image = image"
+                                        :height="129.33" :ratio="1/1" @done="(image) => form.image = image"
                                         @removeImage="(image) => form.image = null" />
                                 </div>
                             </div>
@@ -171,7 +171,7 @@
     import moment from 'moment';
     import _ from 'lodash';
 
-    import BaseLayout from '../Layouts/Authenticated.vue';
+    import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 
 
 

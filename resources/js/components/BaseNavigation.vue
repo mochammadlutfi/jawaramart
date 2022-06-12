@@ -10,7 +10,7 @@
                     :class="node.sub ? 'nav-submenu' : '' || (route().current(node.to)) ? 'active' : ''"
                     :event="node.sub ? '' : 'click'" @click="linkClicked($event, node.sub)">
                 <i v-if="node.icon" :class="`${node.icon}`"></i>
-                <span v-if="node.name" class="nav-main-link-name">{{ node.name }}</span>
+                <span v-if="node.name" class="sidebar-mini-hide">{{ node.name }}</span>
                 <span v-if="node.badge" class="nav-main-link-badge badge badge-pill badge-primary"
                     :class="node['badge-variant'] ? `badge-${node['badge-variant']}` : 'badge-primary' ">{{ node.badge }}</span>
                 </a>
@@ -20,7 +20,7 @@
                     :class="node.sub ? 'nav-submenu' : '' || (route().current(node.to)) ? 'active' : ''"
                     :event="node.sub ? '' : 'click'" @click="linkClicked($event, node.sub)">
                 <i v-if="node.icon" :class="`${node.icon}`"></i>
-                <span v-if="node.name" class="nav-main-link-name">{{ node.name }}</span>
+                <span v-if="node.name" class="sidebar-mini-hide">{{ node.name }}</span>
                 <span v-if="node.badge" class="nav-main-link-badge badge badge-pill badge-primary"
                     :class="node['badge-variant'] ? `badge-${node['badge-variant']}` : 'badge-primary' ">{{ node.badge }}</span>
                 </Link>

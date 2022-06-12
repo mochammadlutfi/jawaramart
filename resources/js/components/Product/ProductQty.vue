@@ -61,24 +61,4 @@ export default {
 
 
 <style>
-.product-qty {
-    width: 160px;
-    border: 1px solid black;
-    padding: 3px;
-    border-radius: 4px;
-}
-
-.product-qty input{
-    border: none;
-}
-
-.product-qty-sm {
-    width: 100%;
-}
-
-
-.product-qty-sm input {
-    padding-left: 0;
-    padding-right: 0;
-}
 </style>

@@ -59,6 +59,8 @@
   }
 
   &.content-boxed { max-width: $space-boxed; }
+
+  &.pos { max-width: 100% !important; }
 }
 
 .content-side {

@@ -19,10 +19,15 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-4"  v-for="(data, index) in permissions" :key="index">
-                                <b-form-checkbox size="lg" :value="data.id" v-model="form.permissions">
+                            <div class="col-3 mb-15" v-for="(data, index) in modules" :key="index">
+                                <b-form-checkbox size="lg" :value="data.id" v-model="moduleSelected" @input.native="handleClick(data, $event)">
                                     {{ toUpperCase(data.name) }}
                                 </b-form-checkbox>
+                                <div class="ml-10">
+                                    <b-form-checkbox v-for="(sf, idx) in data.permission" :key="idx" :value="sf.id" v-model="form.permissions" class="sub-filter ml-2">
+                                           {{ toUpperCase(sf.name) }}
+                                    </b-form-checkbox>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -33,11 +38,11 @@
 </template>
 
 <script>
-import BaseLayout from '../../Layouts/Authenticated.vue'
+import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 
 export default {
     props: {
-        permissions: Array,
+        modules: Array,
         errors: Object,
         data : Object,
         editMode: Boolean,
@@ -52,7 +57,8 @@ export default {
                 name: null,
                 permissions : [],
             },
-            title : 'create New Staff Role',
+            moduleSelected : [],
+            title : 'Create New Staff Role',
         }
     },
     methods : {
@@ -86,6 +92,17 @@ export default {
                 });
             }
             this.title = "Edit Staff Role";
+        },
+        
+        handleClick(modules, e) {
+            if(e.target.checked){
+                modules.permission.forEach((e, i) =>{
+                    this.form.permissions.push(e.id);
+                });
+            }else{
+                let d = this.form.permissions.filter((b) => !modules.permission.some((c) => b === c.id));
+                this.form.permissions = d;
+            }
         }
     },
     mounted() {

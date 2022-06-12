@@ -30,17 +30,10 @@
                             </flicking>
                         </div>
                         <div class="col-8">
-                            <div class="form-material">
-                                <label for="field-name">Name</label>
-                                <input type="text" class="form-control-lg form-control-plaintext" v-model="data.name" disabled>
-                            </div>
-                            <div class="form-material">
-                                <label for="field-description">Description</label>
-                                <textarea class="form-control form-control-plaintext" rows="8" id="field-description" v-model="data.description" disabled></textarea>
-                            </div>
-                            <div class="form-material">
-                                <label for="field-name">Category</label>
-                                <input type="text" class="form-control-lg form-control-plaintext" v-model="data.category.name" disabled>
+                            <h2 class="h3">{{ data.name }}</h2>
+                            <div class="d-flex">
+                                <div class="font-size-md" style="width:20%">Category</div>
+                                <div class="font-size-md font-weight-bold">{{ data.category.name }}</div>
                             </div>
                         </div>
                     </div>
@@ -52,7 +45,7 @@
 <script>
 
 import { Link } from '@inertiajs/inertia-vue';
-import BaseLayout from '../Layouts/Authenticated.vue';
+import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import { Flicking } from "@egjs/vue-flicking";
 import { Sync } from "@egjs/flicking-plugins";
 export default {

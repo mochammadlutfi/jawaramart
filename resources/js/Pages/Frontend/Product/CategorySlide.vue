@@ -1,8 +1,8 @@
 <template>
-    <div class="content">
-        <div class="content-heading pt-0 mb-3 border-0 d-flex justify-content-between">
-            <h3 class="h3 my-auto">Kategori</h3>
-            <div class="slider-arrow slider-arrow-2 flex-right">
+    <div class="content category-slide">
+        <div class="content-heading">
+            <h3 class="title">Kategori</h3>
+            <div class="slider-arrow slider-arrow-2 flex-right" :class="{'d-none' : $root.window.mobile}">
                 <span class="slider-btn slider-prev is-outside">
                     <i class="fi-rs-arrow-small-left"></i>
                 </span>
@@ -13,10 +13,10 @@
         </div>
         <div class="row mx-0">
             <Flicking :options="{ circular: true, align: 'prev' }" :plugins="plugins">
-            <a href="#" class="category-box" v-for="(data, index) in category" :key="index">
+            <a :href="route('product.category', { category_slug : data.slug})" class="category-box" v-for="(data, index) in category" :key="index">
                 <div class="category-wrapper">
                     <figure class="img-hover-scale overflow-hidden">
-                        <img :src="asset(data.thumbnail)" class="img-fluid">
+                        <img :src="data.thumbnail_url" class="img-fluid">
                     </figure>
                     <h6>{{ data.name }}</h6>
                 </div>
@@ -65,6 +65,27 @@ export default {
 
 </script>
 <style>
+.category-slide .content-heading{
+    padding-top: 0;
+    margin-bottom: 3px;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+}
+
+.category-slide .content-heading .title {
+    font-size: 1.857142857rem;
+    font-weight: 700;
+    line-height: 38px;
+    margin-bottom: 0px;
+}
+
+@media screen and (max-width: 768px){
+    .category-slide .content-heading .title{
+        font-size: 1.2rem;
+        line-height: 21px;
+    }
+}
 .category-box {
     align-content: stretch !important;
     box-shadow: 0 5px 5px rgb(33 37 41 / 5%);
@@ -88,6 +109,7 @@ export default {
 @media (max-width: 576px) {
     .category-box {
         max-width: 80px;
+        margin: 3px;
         box-shadow: 0 3px 8px rgb(33 37 41 / 5%);
     }
     .category-box .category-wrapper {

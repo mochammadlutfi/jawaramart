@@ -8,7 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'avatar'
     ];
 
     /**
@@ -41,4 +43,27 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    
+    protected $appends = [
+        'avatar_url'
+    ];
+    
+    public function getPhoneAttribute($value)
+    {
+        if($this->attributes['phone']){
+            return '+62' + $this->attributes['phone'];
+        }else{
+            return null;
+        }
+    }
+    
+    public function getAvatarUrlAttribute($value)
+    {
+        if($this->attributes['avatar']){
+            return asset($this->attributes['avatar']);
+        }else{
+            return asset('images/avatar.jpg');
+        }
+    }
 }

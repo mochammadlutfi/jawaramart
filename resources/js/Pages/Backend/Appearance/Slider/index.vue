@@ -144,7 +144,8 @@
                                         :image="(typeof form.image === 'string') ? asset(form.image) : null"
                                         :imageWidth="1200" 
                                         :imageHeight="400"
-                                        :height="188"
+                                        :height="152"
+                                        :ratio="12/4"
                                         @done="(image) => form.image = image"
                                         @removeImage="(image) => form.image = null" />
                                 </div>
@@ -212,6 +213,11 @@ export default {
             this.editMode = true;
         },
         openModal() {
+            this.form.id = null;
+            this.form.link = null;
+            this.form.image = null;
+            this.form.state = 1;
+            this.editMode = false;
             this.modalShow = true;
         },
         submit: function () {
@@ -232,7 +238,7 @@ export default {
         },
         edit: function (data) {
             this.form.id = data.id;
-            this.form.link = data.link;
+            this.form.link = data.url;
             this.form.image = data.image;
             this.form.state = data.state;
             this.editMode = true;
@@ -256,7 +262,32 @@ export default {
                     
                 });
 			}
-		}
+		},
+        destroy: function (data) {
+            this.$swal.fire({
+                icon: 'warning',
+                title: 'Are you sure?',
+                text: `You won't be able to revert this!`,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete it',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.$inertia.delete(this.route('admin.appearance.slider.delete', data.id), {
+                        preserveScroll: true,
+                        onSuccess: () => {
+                            this.$swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: `Data deleted successfully!`,
+                                showConfirmButton : false,
+                            });
+                            this.reset();
+                        },
+                    })
+                    this.reset();
+                }
+            })
+        },
     }
 }
 </script>

@@ -1,8 +1,8 @@
 <template>
-    <div @mouseover="onOver" @mouseleave="onLeave" class="mr-20">
+    <div @mouseover="onOver" @mouseleave="onLeave" class="my-auto mr-10" v-if="!$root.window.mobile">
         <b-dropdown size="sm" variant="dual" ref="cartHead" class="cart-head d-inline-block" menu-class="cart-dropdown p-0 border-0 font-size-sm" right no-caret>
             <template #button-content>
-                <i class="fi-rs-shopping-cart"></i>
+                <i class="fi-rs-shopping-bag"></i>
                 <span class="cart-count">{{ $page.props.cart.length }}</span>
             </template>
             <li>
@@ -41,10 +41,53 @@
             </li>
         </b-dropdown>
     </div>
+    <a :href="route('cart.index')" class="btn btn-rounded btn-dual-secondary btn-cart" v-else>
+        <i class="fi-rs-shopping-cart"></i>
+        <span class="cart-count">{{ $page.props.cart.length }}</span>
+    </a>
 </template>
 
 <style>
+.btn-cart{
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    position: relative;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
 
+.btn-cart i {
+    font-size: 20px;
+}
+
+.btn-cart:hover {
+    background: none;
+    border: none;
+}
+
+.btn-cart .cart-count {
+    display: inline-block;
+    padding: 0px 4px;
+    text-align: center;
+    font-size: 10px;
+    line-height: 16px;
+    min-width: 16px;
+    height: 16px;
+    color: rgb(255, 255, 255);
+    background: var(--RN600,#E02954);
+    position: absolute;
+    border-radius: 6px;
+    right: -2px;
+    top: -2px;
+}
 </style>
 
 <script>

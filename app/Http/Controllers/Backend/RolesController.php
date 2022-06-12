@@ -10,7 +10,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\Module;
 class RolesController extends Controller
 {
     /**
@@ -36,7 +36,7 @@ class RolesController extends Controller
         })
         ->orderBy('id', 'desc')->paginate(6);
 
-        return Inertia::render('Backend/Settings/Roles/index', [
+        return Inertia::render('Backend/Settings/Roles/Index', [
             'dataList' => $dataList
         ]);
     }
@@ -48,10 +48,12 @@ class RolesController extends Controller
      */
     public function create(Request $request)
     {
-        $permission = Permission::where('guard_name', 'admin')->get();
+        $modules = Module::with('permission')->orderBy('id', 'ASC')->get();
 
-        return Inertia::render('Base::Roles/form', [
-            'permissions' => $permission
+        // $permission = Permission::where('guard_name', 'admin')->get();
+
+        return Inertia::render('Backend/Settings/Roles/Form', [
+            'modules' => $modules
         ]);
     }
 
@@ -102,10 +104,10 @@ class RolesController extends Controller
     public function edit($id)
     {
         $data = Role::with('permissions:id')->where('id', $id)->first();
-        $permission = Permission::where('guard_name', 'admin')->get();
+        $modules = Module::with('permission')->orderBy('id', 'ASC')->get();
 
-        return Inertia::render('Base::Roles/form', [
-            'permissions' => $permission,
+        return Inertia::render('Backend/Settings/Roles/Form', [
+            'modules' => $modules,
             'data' => $data,
             'editMode' => true,
         ]);

@@ -1,18 +1,18 @@
 <template>
     <div>
-        <div class="image-upload-box" :style="{'border': cropImg ? '2px solid #DBDEE2': '2px dashed #DBDEE2', 'height' : heightWrap, 'width' : (width) ? width+'px' : '100%'}">
-            <div v-if="cropImg" class="img-overlay">
+        <div class="image-upload-box" :style="{'height': height+'px', 'width' : width+'px'}">
+            <div v-if="cropImg" class="img-overlay position-relative">
                 <img class="img-fluid" :src="cropImg" />
                 <button type="button" class="btn-block-option" @click.prevent="removeImage">
-                    <span tabindex="-1" class="btn__content"><svg
-                            viewBox="0 0 12.81 12.81" xmlns="http://www.w3.org/2000/svg" width="10"
-                            height="10">
+                    <span tabindex="-1" class="btn__content">
+                        <svg viewBox="0 0 12.81 12.81" xmlns="http://www.w3.org/2000/svg" width="10" height="10">
                             <g fill="none" stroke="#fff" stroke-linecap="round"
                                 stroke-miterlimit="10" stroke-width="1.5">
                                 <path d="m.75.75 5.66 5.66 5.65-5.66"></path>
                                 <path d="m12.06 12.06-5.65-5.65-5.66 5.65"></path>
                             </g>
-                        </svg></span>
+                        </svg>
+                    </span>
                 </button>
             </div>
             <div v-else class="upload-wrap">
@@ -20,43 +20,36 @@
                 <i class="si si-camera mr-1"></i>Pilih Foto
             </div>
         </div>
-        <div v-show="modalOpen">
-            <transition name="modal-fade">
-                <div class="modal-backdrop">
-                    <div class="modal" tabindex="-1" aria-labelledby="modal-large"
-                        style="display: block; padding-right: 17px;" aria-modal="true" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="block block-themed block-transparent mb-0">
-                                    <div class="block-header bg-primary-dark">
-                                        <h3 class="block-title">Cropper</h3>
-                                        <div class="block-options">
-                                            <button type="button" @click.prevent="close" class="btn-block-option" aria-label="Close">
-                                                <i class="si si-close"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="block-content">
-                                        <section class="cropper-area">
-                                            <div class="img-cropper">
-                                                <vue-cropper ref="cropper" :aspect-ratio="ratio" :src="imgSrc"
-                                                :cropBoxResizable="true"/>
-                                            </div>
-                                        </section>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-alt-secondary"  @click.prevent="close">Close</button>
-                                    <button type="button" class="btn btn-primary btn-noborder" @click.prevent="submitImage">
-                                        <i class="fa fa-check"></i> save
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+        
+        <b-modal v-model="modalOpen" size="md" content-class="rounded" body-class="p-0" no-close-on-backdrop hide-footer hide-header>
+            <div class="block block-themed block-transparent mb-0">
+                <div class="block-header">
+                    <h3 class="block-title">Cropper</h3>
+                    <div class="block-options">
+                        <button type="button" @click.prevent="close" class="btn-block-option" aria-label="Close">
+                            <i class="si si-close"></i>
+                        </button>
                     </div>
                 </div>
-            </transition>
-        </div>
+                <div class="block-content">
+                    <section class="cropper-area">
+                        <div class="img-cropper">
+                            <vue-cropper ref="cropper" :aspect-ratio="ratio" :src="imgSrc"
+                            :cropBoxResizable="true"/>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-alt-secondary"  @click.prevent="close">
+                     <i class="si si-close"></i>
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary btn-noborder" @click.prevent="submitImage">
+                    <i class="si si-check"></i> save
+                </button>
+            </div>
+        </b-modal>
     </div>
 </template>
 <script>
@@ -173,7 +166,6 @@ export default {
 .image-upload-box {
     box-sizing: border-box;
     border-radius: 8px;
-    height: 200px;
     margin-top: 10px;
     margin-bottom: 10px;
     cursor: pointer;
@@ -200,8 +192,8 @@ export default {
 }
 
 .image-upload-box .img-overlay button {
-    top: 0px;
-    right: 6px;
+    top: -12px;
+    right: -10px;
     position: absolute;
     display: flex;
     text-align: center;

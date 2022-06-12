@@ -121,4 +121,18 @@ class CustomerController extends Controller
     {
         //
     }
+
+    
+    public function data(Request $request)
+    {
+        $keyword = $request->q;
+        $data = User::select('id', 'name', 'avatar', 'anggota_id')
+        ->when($request->q, function($query, $search){
+            $query->where('name', 'LIKE', '%' . $search . '%')
+            ->orWhere('email', 'LIKE', '%' . $search . '%');
+        })
+        ->orderBy('id', 'ASC')->get();
+        
+        return response()->json($data);
+    }
 }

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use App\Models\Product;
+use DB;
 class ProductController extends Controller
 {
     /**
@@ -24,7 +25,12 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $data = Product::latest()->get();
+        $data = Product::with('variant')
+        ->withCount([
+            'stock' => function ($query) {
+                $query->select(DB::raw("IFNULL(SUM(stock), 0 )"));
+            }
+        ])->orderBy('id', 'ASC')->limit(18)->get();
         if($data){
             return response()->json([
                 'data' => $data,
@@ -32,7 +38,7 @@ class ProductController extends Controller
             ], 200);
         }else{
             return response()->json([
-                'message' => "No Hp Tidak Ditemukan",
+                'message' => "Product Not Found",
                 'fail' => false,
             ], 400);
         }

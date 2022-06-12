@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\Cart;
 use Illuminate\Support\Facades\Auth;
+
+use App\Helpers\MenuHelp;
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -44,15 +46,16 @@ class HandleInertiaRequests extends Middleware
             ],
             'auth' => [
                 'staff' => fn () => $request->user('admin')
-                ? $request->user('admin')->only('name', 'email')
+                ? $request->user('admin')->only('name', 'email', 'avatar', 'avatar_url')
                 : null,
                 'user' => fn () => $request->user()
-                ? $request->user()->only('name', 'email')
+                ? $request->user()->only('name', 'email', 'avatar', 'avatar_url')
                 : null,
             ],
             'errors' => fn() => $this->sharedValidationErrors(),
             'settings' => fn() => settings()->all(),
         ];
+
         if(Auth::guard('web')->check()){
             $data['cart'] = Cart::with('product', 'variant')
             ->where('user_id', auth()->guard('web')->user()->id)
@@ -60,7 +63,11 @@ class HandleInertiaRequests extends Middleware
         }else{
             $data['cart'] = [];
         }
-        // $data
+
+        if(Auth::guard('admin')->check()){
+            $data['menu'] = MenuHelp::mainMenu();
+            $data['modules'] = MenuHelp::permission();
+        }
 
         return array_merge(parent::share($request), $data);
     }

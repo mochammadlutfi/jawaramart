@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import BaseLayout from '@/Layouts/Authenticated.vue'
+import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import ImageUpload from '@/components/SingleImageUpload.vue';
 
 export default {

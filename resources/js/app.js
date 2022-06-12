@@ -1,11 +1,10 @@
 import { App, plugin } from '@inertiajs/inertia-vue'
 import Vue from 'vue'
-// import { InertiaProgress } from '@inertiajs/progress'
-
 
 import store from './store'
 import BootstrapVue from 'bootstrap-vue';
 import VueSweetalert2 from 'vue-sweetalert2';
+import VueBarcodeScanner from 'vue-barcode-scanner'
 
 // Custom components
 import BaseLayoutModifier from '@/components/BaseLayoutModifier'
@@ -20,22 +19,26 @@ Vue.component(BaseBlock.name, BaseBlock)
 Vue.component(BaseBackground.name, BaseBackground)
 Vue.component(BasePageHeading.name, BasePageHeading)
 Vue.component(BaseNavigation.name, BaseNavigation)
-// Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 
 Vue.use(plugin)
 Vue.use(BootstrapVue)
 Vue.use(VueSweetalert2);
+Vue.use(VueBarcodeScanner);
 const el = document.getElementById('app');
+
+import permission from '@/Utils/permission';
 Vue.mixin({
     methods: {
         route,
+        permission,
         asset(path) {
             var base_path = window._asset || '';
             return base_path + path;
         },
         currency(value){
             if (typeof value !== "number") {
-                return value;
+                // return value;
+                value = parseFloat(value);
              }
              var formatter = new Intl.NumberFormat('id-ID', {
                 style: 'currency',
@@ -53,8 +56,35 @@ Vue.mixin({
     },
 });
 
+Vue.config.productionTip = false;
+
 new Vue({
     store,
+    data: {
+        window: {
+            width: 0,
+            height: 0,
+            mobile : false,
+        }
+    },
+    created() {
+        window.addEventListener('resize', this.handleResize);
+        this.handleResize();
+    },
+    destroyed() {
+        window.removeEventListener('resize', this.handleResize);
+    },
+    methods: {
+        handleResize() {
+            this.window.width = window.innerWidth;
+            this.window.height = window.innerHeight;
+            if(this.window.width > 768){
+                this.window.mobile = false;
+            }else{
+                this.window.mobile = true;
+            }
+        }
+    },
     render: h => h(App, {
         props: {
             title: title => `${title} - My App`,

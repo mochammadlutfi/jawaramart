@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class ForgotPasswordController extends Controller
 {
@@ -37,7 +38,8 @@ class ForgotPasswordController extends Controller
     
     public function showLinkRequestForm(Request $request)
     {
-        return view("website.auth.passwords.email");
+        return Inertia::render('Frontend/Auth/Passwords/Email');
+        // return view("website.auth.passwords.email");
     }
 
     public function sendResetLinkEmail(Request $request)
@@ -60,10 +62,7 @@ class ForgotPasswordController extends Controller
 
         $validator = Validator::make($request->all(), $rules, $pesan);
         if ($validator->fails()){
-            return response()->json([
-                'fail' => true,
-                'errors' => $validator->errors()
-            ]);
+            return back()->withErrors($validator->errors());
         }else{
             if($this->checkEmail($request->email))
             {
@@ -75,9 +74,7 @@ class ForgotPasswordController extends Controller
                 );
             }
             Password::sendResetLink($email);
-            return response()->json([
-                'fail' => false,
-            ]);
+            return back();
         }
     }
 
