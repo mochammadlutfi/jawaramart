@@ -35,6 +35,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
 
         Route::group(['prefix' => 'customer'], function () {
             Route::get('/', 'CustomerController@index')->name('customer.index');
+            Route::get('/detail/{id}', 'CustomerController@show')->name('customer.show');
             Route::get('/data', 'CustomerController@data')->name('customer.data');
             Route::post('/store','CustomerController@store')->name('customer.store');
             Route::get('/edit/{id}','CustomerController@edit')->name('customer.edit');

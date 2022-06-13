@@ -88,14 +88,9 @@
                                     <td>{{ data.email }}</td>
                                     <td>{{ data.total_stock }}</td>
                                     <th>
-                                        <b-dropdown text="Action" class="m-md-2"  size="sm">
-                                            <Link :href="route('admin.product.show', {id : data.id})" as="button" class="dropdown-item" type="button">
-                                                Detail
-                                            </Link>
-                                            <Link :href="route('admin.product.edit', {id : data.id})" as="button" class="dropdown-item" type="button">
-                                                Edit
-                                            </Link>
-                                        </b-dropdown>
+                                        <a :href="route('admin.customer.show', { id : data.id})" class="btn btn-sm btn-secondary">
+                                            <i class="si si-eye mr-1"></i>Detail
+                                        </a>
                                     </th>
                                 </tr>
                             </template>

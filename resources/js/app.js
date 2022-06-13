@@ -5,6 +5,7 @@ import store from './store'
 import BootstrapVue from 'bootstrap-vue';
 import VueSweetalert2 from 'vue-sweetalert2';
 import VueBarcodeScanner from 'vue-barcode-scanner'
+import VueSocialSharing from 'vue-social-sharing'
 
 // Custom components
 import BaseLayoutModifier from '@/components/BaseLayoutModifier'
@@ -24,6 +25,7 @@ Vue.use(plugin)
 Vue.use(BootstrapVue)
 Vue.use(VueSweetalert2);
 Vue.use(VueBarcodeScanner);
+Vue.use(VueSocialSharing);
 const el = document.getElementById('app');
 
 import permission from '@/Utils/permission';

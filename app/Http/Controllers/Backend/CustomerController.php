@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use App\Models\User;
+use App\Models\Sale;
 use Auth;
 
 class CustomerController extends Controller
@@ -38,30 +39,6 @@ class CustomerController extends Controller
         ]);
     }
 
-    
-    public function profile(Request $request)
-    {
-
-        $user = Auth::user('admin');
-
-        return Inertia::render('Base::Admin/Profile', [
-            'user' => $user->only('name', 'email'),
-        ]);
-    }
-
-    public function updateProfile(Request $request)
-    {
-        $user = Auth::user('admin');
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->save();
-
-        if($user){
-            return redirect()->back()->with('message', 'Data Berhasil Diupdate!');
-        }
-
-    }
-
     /**
      * Show the form for creating a new resource.
      * @return Renderable
@@ -88,7 +65,16 @@ class CustomerController extends Controller
      */
     public function show($id)
     {
-        return view('base::show');
+        $data = User::where('id', $id)->first();
+
+
+        $sales = Sale::where('customer_id', $id)->withCount(['line'])
+        ->orderBy('date', 'DESC')->get(10);
+
+        return Inertia::render('Backend/Customer/Show', [
+            'data' => $data,
+            'sales' => $sales,
+        ]);
     }
 
     /**

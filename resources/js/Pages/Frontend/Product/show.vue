@@ -11,9 +11,16 @@
                     <div class="product-img-detail">
                         <div class="product-img-nav">
                             <flicking ref="flicking1" :options="{ bound: true, bounce: 30, moveType: 'freeScroll', align : 'prev' }" :class="{ 'd-none' : $root.window.mobile }">
-                                <div class="flicking-panel thumb has-background-primary" v-for="(thumb, iThumb) in data.images" :key="iThumb">
-                                    <img class="thumb-image" :src="asset(thumb.path)" />
-                                </div>
+                                <template v-if="data.images.length">
+                                    <div class="flicking-panel thumb has-background-primary" v-for="(thumb, iThumb) in data.images" :key="iThumb">
+                                        <img class="thumb-image" :src="asset(thumb.path)" />
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <div class="flicking-panel thumb has-background-primary">
+                                        <img class="thumb-image" :src="asset('media/placeholder/product.png')" />
+                                    </div>
+                                </template>
                             </flicking>
                         </div>
                         <flicking ref="flicking0" :options="{ bounce: 30, disableOnInit: true}" :plugins="plugins">
@@ -101,10 +108,13 @@
                                 </button>
                             </div>
                             <div class="col-lg-6">
-                                <button type="button" class="btn btn-share btn-lg btn-block">
+                                <!-- <button type="button" class="btn btn-share btn-lg btn-block">
                                     <i class="fi fi-rs-share"></i>
                                     Share
-                                </button>
+                                </button> -->
+                                
+                                <share-dropdown :url="route('product.show', { 'product' : data.slug })" 
+                                    :title="data.name"/>
                             </div>
                         </div>
                     </template>
@@ -153,11 +163,13 @@ import { Flicking } from "@egjs/vue-flicking";
 import { Sync } from "@egjs/flicking-plugins";
 import ProductQty from "@/components/Product/ProductQty.vue";
 import ProductReview from "./ProductReview.vue";
+import ShareDropdown from "./ShareDropdown.vue";
 export default {
     components: {
         BaseLayout,
         Flicking,
         ProductQty,
+        ShareDropdown,
         ProductReview
     },
     props : {
