@@ -67,7 +67,7 @@ class LoginController extends Controller
             return back()->withErrors($validator->errors());
         }else{
             $fieldType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-            if(auth()->guard('admin')->attempt($request->only('email','password')))
+            if(auth()->guard('admin')->attempt($request->only('email', 'password')))
             {
                 return redirect()->route('admin.dashboard');
             }else{

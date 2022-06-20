@@ -73,8 +73,12 @@ class ForgotPasswordController extends Controller
                     'email' => $user->email
                 );
             }
-            Password::sendResetLink($email);
-            return back();
+            $send = Password::sendResetLink($email);
+            if($send){
+                return redirect()->back()->with('message', 'Email Reset Password Berhasil Dikirim');
+            }else{
+                return redirect()->back()->with('message', 'Email Reset Password Gagal Dikirim');
+            }
         }
     }
 

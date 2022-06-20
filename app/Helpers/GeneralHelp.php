@@ -6,7 +6,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use DB;
 use App\Models\Sale;
+use App\Models\SaleReturn;
 use App\Models\Purchase;
+use App\Models\PurchaseReturn;
 use App\Models\Payment;
 class GeneralHelp
 {
@@ -28,12 +30,49 @@ class GeneralHelp
         }
     }
 
+    public static function generate_ref_sale_return()
+    {
+        $q = SaleReturn::select(DB::raw('MAX(RIGHT(ref,5)) AS kd_max'));
+        $urut = "";
+
+        $code = 'SR/';
+        $no = 1;
+        date_default_timezone_set('Asia/Jakarta');
+
+        if($q->count() > 0){
+            foreach($q->get() as $k){
+                return $code . date('ymd') .'/'.sprintf("%05s", abs(((int)$k->kd_max) + 1));
+            }
+        }else{
+            return $code . date('ymd') .'/'. sprintf("%05s", $no);
+        }
+    }
+
+
     public static function generate_ref_purchase()
     {
         $q = Purchase::select(DB::raw('MAX(RIGHT(ref,5)) AS kd_max'));
         $urut = "";
 
         $code = 'PO/';
+        $no = 1;
+        date_default_timezone_set('Asia/Jakarta');
+
+        if($q->count() > 0){
+            foreach($q->get() as $k){
+                return $code . date('ymd') .'/'.sprintf("%05s", abs(((int)$k->kd_max) + 1));
+            }
+        }else{
+            return $code . date('ymd') .'/'. sprintf("%05s", $no);
+        }
+    }
+
+    public static function generate_ref_purchase_return()
+    {
+        $q = PurchaseReturn::select(DB::raw('MAX(RIGHT(ref,5)) AS kd_max'));
+        $urut = "";
+
+        $code = 'PR/';
         $no = 1;
         date_default_timezone_set('Asia/Jakarta');
 

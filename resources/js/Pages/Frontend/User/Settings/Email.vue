@@ -93,7 +93,7 @@ export default {
                 allowOutsideClick: false,
             });
             let form = this.$inertia.form(this.form);
-            let url = this.route("user.email.update");
+            let url = this.route("user.settings.email.update");
             form.post(url, {
                 preserveScroll: true,
                 onSuccess: () => {
@@ -111,7 +111,7 @@ export default {
             });
         },
         submitAuth: function () {
-            axios.post(route('user.validate'), this.auth)
+            axios.post(route('user.settings.validate'), this.auth)
             .then(res => {
                 const data = res.data;
                 if(data.success){

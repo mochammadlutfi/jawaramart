@@ -9,7 +9,8 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Sale;
 use Auth;
-
+use DB;
+use Illuminate\Support\Facades\Hash;
 class CustomerController extends Controller
 {
     /**
@@ -28,7 +29,10 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $dataList = User::when($request->search, function($query, $search){
+        $dataList = User::withCount(['sale' => function($q){
+            $q->select(DB::raw('coalesce(SUM(grand_total),0) as paidsum'));
+        },])
+        ->when($request->search, function($query, $search){
             $query->where('name', 'LIKE', '%' . $search . '%')
             ->orWhere('email', 'LIKE', '%' . $search . '%');
         })
@@ -45,7 +49,8 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        return view('base::create');
+        $this->import();
+        // return view('base::create');
     }
 
     /**
@@ -106,6 +111,55 @@ class CustomerController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    
+    public function import(){
+        $filepath = public_path('customer.csv');
+        // Reading file
+        $file = fopen($filepath, "r");
+        $importData_arr = array(); // Read through the file and store the contents as an array
+        $i = 0;
+        //Read the contents of the uploaded file 
+        while (($filedata = fgetcsv($file, 1000, ";")) !== FALSE) {
+            $num = count($filedata);
+            if ($i == 0) {
+            $i++;
+            continue;
+            }
+            for ($c = 0; $c < $num; $c++) {
+                $importData_arr[$i][] = $filedata[$c];
+            }
+            $i++;
+        }
+        fclose($file);
+        
+        $j = 0;
+        $no = 1;
+        // dd($importData_arr);
+        DB::beginTransaction();
+        try{
+            foreach ($importData_arr as $importData) {
+                $nip = $importData[0];
+                $name = $importData[1];
+                $email = $importData[2];
+                $password = $importData[3];
+                $j++;
+
+                $user = new User();
+                $user->name = $name;
+                $user->email = $email;
+                $user->nip = $nip;
+                $user->password = Hash::make($password);
+                $user->save();
+            }
+
+        }catch(\QueryException $e){
+            DB::rollback();
+            dd($e);
+        }
+        DB::commit();
+        echo 'done';
     }
 
     

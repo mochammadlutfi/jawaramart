@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductImage;
 use App\Models\ProductStock;
+use App\Models\PurchaseLine;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -379,52 +380,69 @@ class ProductController extends Controller
         $j = 0;
         $no = 1;
         // dd($importData_arr);
-        foreach ($importData_arr as $importData) {
-            $sku = $importData[0];
-            $name = $importData[1];
-            $stock = (int)$importData[2];
-            $sell_price = (int)$importData[3];
-            $purchase_price = (int)$importData[4];
-            $unit = $importData[5];
-            // $weight = (int)$importData[6];
-            $lenght = $importData[6];
-            $width = $importData[7];
-            $height = $importData[8];
-            $category_id = (int)$importData[9];
-            $j++;
-            DB::beginTransaction();
-            try{
+        DB::beginTransaction();
+        try{
 
-                $product = new Product();
-                $product->name = $name;
-                $product->category_id = $category_id;
-                // $product->brand_id = $brand_id;
-                $product->has_variant = 0;
-                $product->berat = 0;
-                $product->berat_satuan = $unit;
-                $product->panjang = empty($lenght) ? 0 : $lenght;
-                $product->lebar = empty($width) ? 0 : $width;
-                $product->tinggi = empty($height) ? 0 : $height;
-                $product->save();
+            
+            foreach ($importData_arr as $importData) {
+                $sku = $importData[0];
+                $name = $importData[1];
+                $stock = (int)$importData[2];
+                $sell_price = (int)$importData[3];
+                $purchase_price = (int)$importData[4];
+                $unit = $importData[5];
+                // $weight = (int)$importData[6];
+                $lenght = $importData[6];
+                $width = $importData[7];
+                $height = $importData[8];
+                $category_id = (int)$importData[9];
+                $j++;
 
-                $variant = new ProductVariant();
-                $variant->sell_price = $sell_price;
-                $variant->purchase_price = $purchase_price;
-                $variant->sku = $sku;
-                $res = $product->variant()->save($variant);
-                
-                $stock_fil = new ProductStock();
-                $stock_fil->product_id = $res->id;
-                $stock_fil->variant_id = $res->product_id;
-                $stock_fil->stock = $stock;
-                $stock_fil->save();
+                    $product = new Product();
+                    $product->name = $name;
+                    $product->category_id = $category_id;
+                    // $product->brand_id = $brand_id;
+                    $product->has_variant = 0;
+                    $product->berat = 0;
+                    $product->berat_satuan = $unit;
+                    $product->panjang = empty($lenght) ? 0 : $lenght;
+                    $product->lebar = empty($width) ? 0 : $width;
+                    $product->tinggi = empty($height) ? 0 : $height;
+                    $product->save();
 
-            }catch(\QueryException $e){
-                DB::rollback();
-                dd($e);
+                    $variant = new ProductVariant();
+                    $variant->sell_price = $sell_price;
+                    $variant->purchase_price = $purchase_price;
+                    $variant->sku = $sku;
+                    $res = $product->variant()->save($variant);
+                    
+                    $stock_fil = new ProductStock();
+                    $stock_fil->product_id = $res->id;
+                    $stock_fil->variant_id = $res->product_id;
+                    $stock_fil->stock = $stock;
+                    $stock_fil->save();
+
+                    if($stock > 0){
+                        $line = new PurchaseLine();
+                        $line->purchase_id = 1;
+                        $line->product_id = $product->id;
+                        $line->variant_id = $res->id;
+                        $line->unit_price = $purchase_price;
+                        $line->net_price = $purchase_price;
+                        $line->qty = $stock;
+                        $line->discount_type = 'fixed';
+                        $line->discount_value = 0;
+                        $line->discount_amount = 0;
+                        $line->sub_total = $purchase_price * $stock;
+                        $line->save();
+                    }
             }
-            DB::commit();
+
+        }catch(\QueryException $e){
+            DB::rollback();
+            dd($e);
         }
+        DB::commit();
         echo 'done';
     }
     

@@ -81,7 +81,9 @@
                                     </td>
                                     <td> <img class="media-object" :src="data.main_image" style="max-width:45px"></td>
                                     <td>{{ data.name }}</td>
-                                    <td>{{ currency(data.sell_price) }}</td>
+                                    <td>
+                                        {{ currency((type == 'sales') ? data.sell_price : data.purchase_price) }}
+                                    </td>
                                     <td>{{ data.stock_count }}</td>
                                 </tr>
                                 <template v-if="data.variant.length > 1">
@@ -92,7 +94,7 @@
                                         </td>
                                         <td></td>
                                         <td>{{ v.variant }}</td>
-                                        <td>{{ currency(v.sell_price) }}</td>
+                                        <td>{{ currency((type == 'sales') ? v.sell_price : v.purchase_price) }}</td>
                                         <td>{{ data.stock_count }}</td>
                                     </tr>
                                 </template>
@@ -253,13 +255,13 @@ export default {
                         name : product.name,
                         variant_id : product.variant[0].id,
                         variant_name : product.variant[0].name,
-                        price : product.variant[0].sell_price,
-                        net_price : product.variant[0].sell_price,
+                        price : product.variant[0].purchase_price,
+                        net_price : product.variant[0].purchase_price,
                         discount_type : 'fixed',
                         discount_value : 0,
                         discount_amount : 0,
                         qty : 1,
-                        subtotal : 1 * product.variant[0].sell_price,
+                        subtotal : 1 * product.variant[0].purchase_price,
                         tax_id : null,
                         tax_amount : 0,
                         max_stock : product.stock_count
@@ -343,18 +345,20 @@ export default {
                 variant_name += product.variant[index].variant2;
             }
 
+            let price = (this.type == 'sales') ? product.variant[index].sell_price : product.variant[index].purchase_price
+
             var data = {
-                id : product.id,
+                product_id : product.id,
                 name : product.name,
                 variant_id : product.variant[index].id,
                 variant_name : variant_name,
-                price : product.variant[index].sell_price,
-                net_price : product.variant[index].sell_price,
+                price : price,
+                net_price : price,
                 discount_type : 'fixed',
                 discount_value : 0,
                 discount_amount : 0,
                 qty : 1,
-                subtotal : 1 * product.variant[index].sell_price,
+                subtotal : 1 * price,
                 tax_id : null,
                 tax_amount : 0,
                 max_stock : product.stock_count

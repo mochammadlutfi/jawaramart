@@ -27,12 +27,21 @@ Vue.use(VueSweetalert2);
 Vue.use(VueBarcodeScanner);
 Vue.use(VueSocialSharing);
 const el = document.getElementById('app');
-
-import permission from '@/Utils/permission';
 Vue.mixin({
     methods: {
         route,
-        permission,
+        // hasPermission,
+        hasPermission(modules, permission){
+            const moduleList = this.$page.props.modules;
+            if(moduleList[modules] != undefined){
+                let hasPermission = moduleList[modules].includes(permission);
+                
+                return hasPermission;
+            }else{
+                console.error(`Modules ${ modules } not active for this user!"`);
+                return false;
+            }
+        },
         asset(path) {
             var base_path = window._asset || '';
             return base_path + path;

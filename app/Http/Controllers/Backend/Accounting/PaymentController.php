@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Backend\Accounting;
 
 use App\Models\Accounting\Payment;
-
+use App\Models\Accounting\PaymentMethod;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Storage;
 
+use Carbon\Carbon;
 class PaymentController extends Controller
 {
     public function __construct()
@@ -27,12 +28,36 @@ class PaymentController extends Controller
      */
     public function index(Request $request)
     {
-        $data = Payment::orderBy('id', 'desc')->paginate(6);
+        $data = ProductBrand::withCount(['product'])
+        ->when($request->search, function($query, $search){
+            $query->where('name', 'LIKE', '%' . $search . '%');
+        })
+        ->orderBy('id', 'desc')->paginate(6);
        
 
-        return Inertia::render('Backend/Accounting/Payment/Index', [
+        return Inertia::render('Backend/Brand/index', [
             'dataList' => fn () => $data
         ]);
+    }
+
+        /**
+     * Display a listing of the resource.
+     * @return Renderable
+     */
+    public function data(Request $request)
+    {
+        $data = Payment::where('paymenttable_type', $request->type)
+        ->where('paymenttable_id', $request->id)
+        ->with(['payment_method'])
+        ->orderBy('id', 'desc')->get();
+        
+        $payment_methods = PaymentMethod::where('pos_ok', 1)->get();
+
+        return response()->json([
+            'data' => $data,
+            'payment_methods' => $payment_methods,
+            'fail' => false,
+        ], 200);
     }
 
     /**
@@ -43,11 +68,11 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required',
+            'paymenttable_type' => 'required',
         ];
 
         $pesan = [
-            'name.required' => 'Nama Brand Wajib Diisi!',
+            'paymenttable_type.required' => 'Nama Brand Wajib Diisi!',
         ];
 
         $validator = Validator::make($request->all(), $rules, $pesan);
@@ -56,12 +81,17 @@ class PaymentController extends Controller
         }else{
             DB::beginTransaction();
             try{
-                    $data = new ProductBrand();
-                    $data->name = $request->name;
-                    $data->state = $request->state;
-                    if(!empty($request->file('image'))){
-                        $data->image = $this->uploadFiles($request->file('image'), Str::slug($request->name, '-'));
-                    }
+                    $data = new Payment();
+                    $data->paymenttable_type = $request->paymenttable_type;
+                    $data->paymenttable_id = $request->paymenttable_id;
+                    $data->amount = $request->amount;
+                    $data->amount_received = $request->amount_received;
+                    $data->payment_method_id = $request->payment_method_id;
+                    $data->change = $request->change;
+                    $data->date = Carbon::now();
+                    $data->validated_at = Carbon::now();
+                    $data->validated_by = auth()->guard('admin')->user()->id;
+
                     $data->save();
 
             }catch(\QueryException $e){
@@ -69,7 +99,8 @@ class PaymentController extends Controller
                 return back();
             }
             DB::commit();
-            return redirect()->route('admin.product.brand.index');
+
+            return redirect()->back();
         }
     }
 
@@ -139,16 +170,29 @@ class PaymentController extends Controller
      */
     public function destroy($id)
     {
-        $data = ProductBrand::find($id);
-        $cek = Storage::disk('public')->exists($data->thumbnail);
-        if($cek)
-        {
-            Storage::disk('public')->delete($data->thumbnail);
+        DB::beginTransaction();
+        try{
+            $data = Payment::where('id', $id)->first();
+            $parent_id = $data->paymenttable_id;
+            $model = $data->paymenttable_type;
+            $data->delete();
+
+            $parent = $model::where('id', $parent_id)->first();
+            if($parent->to_pay == 0){
+                $parent->payment_status = 'paid';
+            }else if($parent->to_pay < $parent->grand_total){
+                $parent->payment_status = 'partial';
+            }else{
+                $parent->payment_status = 'unpaid';
+            }
+            $parent->save();
+
+
+        }catch(\QueryException $e){
+            DB::rollback();
+            return back();
         }
-        $hapus_db = ProductBrand::destroy($data->id);
-        if($hapus_db)
-        {
-            return redirect()->route('admin.product.brand.index');
-        }
+        DB::commit();
+            return redirect()->back();
     }
 }

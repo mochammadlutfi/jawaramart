@@ -93,11 +93,17 @@ class MenuHelp
                 "name" => 'List POS',
                 "to" => 'admin.sale.pos.index',
             ];
+
+            $sub_menu[] = [
+                "name" => 'List Sale Return',
+                "to" => 'admin.sale.return.index',
+            ];
             
             $sub_menu[] = [
                 "name" => 'Sale Payment',
                 "to" => 'admin.sale.payment.index',
             ];
+
 
             $menu = $menu->put('sub', $sub_menu);
             $menuData->push($menu->all());
@@ -129,6 +135,12 @@ class MenuHelp
             $sub_menu[] = [
                 "name" => 'List Purchase Orders',
                 "to" => 'admin.purchase.order.index',
+            ];
+
+            
+            $sub_menu[] = [
+                "name" => 'List Purchase Return',
+                "to" => 'admin.purchase.return.index',
             ];
 
             $menu = $menu->put('sub', $sub_menu);
@@ -246,131 +258,31 @@ class MenuHelp
             $menu = $menu->put('sub', $sub_menu);
             $menuData->push($menu->all());
         }
-        
-        $menuList = [
-            [
-                "icon" => "si si-speedometer",
-                "name" => "Dashboard",
-                "to" => "admin.dashboard",
-            ],
-            [
-                "icon" => "si si-user",
-                "name" => "Customers",
-                "to" => "admin.customer.index",
-            ],
-            [
-                "name" => 'Products',
-                "icon" => 'si si-wallet',
-                "subActivePaths" => 'admin.product.*',
-                "sub" => [
-                    [
-                        "name" => 'Product',
-                        "to" => 'admin.product.index',
-                    ],
-                    [
-                        "name" => 'Categories',
-                        "to" => 'admin.product.category.index',
-                    ],
-                    [
-                        "name" => 'Brands',
-                        "to" => 'admin.product.brand.index',
-                    ],
-                ]
-            ],
-            [
-                "name" => 'Sales',
-                "icon" => 'fa fa-arrow-circle-up',
-                "subActivePaths" => 'admin.sale.*',
-                "sub" => [
-                    [
-                        "name" => "POS",
-                        "to" => "admin.sale.pos.index",
-                    ],
-                    [
-                        "name" => 'Create Sale Order',
-                        "to" => 'admin.sale.order.create',
-                    ],
-                    [
-                        "name" => 'List Sale Orders',
-                        "to" => 'admin.sale.order.index',
-                    ],
-                ]
-            ],
-            [
-                "name" => 'Purchase',
-                "icon" => 'fa fa-arrow-circle-down',
-                "subActivePaths" => 'admin.purchase.*',
-                "sub" => [
-                    [
-                        "name" => 'Supplier',
-                        "to" => 'admin.purchase.supplier.index',
-                    ],
-                    [
-                        "name" => 'Create Purchase Order',
-                        "to" => 'admin.purchase.order.create',
-                    ],
-                    [
-                        "name" => 'List Purchase Orders',
-                        "to" => 'admin.purchase.order.index',
-                    ],
-                ]
-            ],
-            [
-                "name" => 'Accounting',
-                "icon" => 'si si-wallet',
-                "subActivePaths" => 'admin.product.*',
-                "sub" => [
-                    [
-                        "name" => 'Payment',
-                        "to" => 'admin.product.index',
-                    ],
-                    [
-                        "name" => 'Payment Method',
-                        "to" => 'admin.product.category.index',
-                    ],
-                ]
-            ],
-            [
-                "name" => 'Appearance',
-                "icon" => 'si si-calculator',
-                "subActivePaths" => 'admin.appearance.*',
-                "sub" => [
-                    [
-                        "name" => 'Sliders',
-                        "to" => 'admin.appearance.slider.index',
-                    ],
-                ]
-            ],
-            [
-                "name" => 'Settings',
-                "icon" => 'si si-wrench',
-                "subActivePaths" => 'admin.settings.*',
-                "sub" => [
-                    [
-                        "name" => 'General',
-                        "to" => 'admin.settings.general.index',
-                    ],
-                    [
-                        "name" => 'Staff',
-                        "to" => 'admin.settings.staff.index',
-                    ],
-                    [
-                        "name" => 'Staff Role',
-                        "to" => 'admin.settings.roles.index',
-                    ],
-                    [
-                        "name" => 'Tax',
-                        "to" => 'admin.settings.tax.index',
-                    ],
-                    [
-                        "name" => 'Warehouses',
-                        "to" => 'admin.settings.warehouse.index',
-                    ],
-                ],
-            ]
-        ];
 
-        $data = Collect($menuList);
+        
+        if(array_key_exists('Base', $permission)){
+            $menu = Collect([
+                "name" => 'Report',
+                "icon" => 'fi fi-rs-brush',
+                "subActivePaths" => 'admin.report.*',
+            ]);
+
+            $sub_menu = [];
+
+            $sub_menu[] = [
+                "name" => 'Profit & Loss',
+                "to" => 'admin.report.profit_loss',
+            ];
+
+            $sub_menu[] = [
+                "name" => 'Stock Report',
+                "to" => 'admin.report.stock_report',
+            ];
+
+            $menu = $menu->put('sub', $sub_menu);
+            $menuData->push($menu->all());
+        }
+
 
         return $menuData->all();
     }

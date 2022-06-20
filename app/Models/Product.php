@@ -23,7 +23,7 @@ class Product extends Model
     ];
 
     protected $appends = [
-        'main_image', 'sell_price', 'sell_max_price'
+        'main_image', 'sell_price', 'sell_max_price', 'purchase_price'
     ];
 
     
@@ -52,6 +52,18 @@ class Product extends Model
     public function purchase()
     {
         return $this->hasOne(Purchase::class, 'product_id');
+    }
+
+    public function getPurchasePriceAttribute()
+    {
+        $variant = $this->hasMany(ProductVariant::class, 'product_id');
+        if($variant->count() > 1)
+        {
+            return (int)$variant->min('purchase_price');
+
+        }else{
+            return (int)$variant->first()->purchase_price;
+        }
     }
 
     public function getSellPriceAttribute()

@@ -41,16 +41,9 @@
                 </div>
             </template>
             <template v-else>
-                <div class="block block-rounded block-shadow block-bordered mb-5">
-                    <div class="block-content block-content-full">
-                        <div class="content__top-info">
-                            <span class="top-info__name">{{ d.reciever }}</span>
-                            <span class="top-info__phone">{{ d.phone }}</span>
-                        </div>
-                        <div class="content__complete-address">
-                            {{ d.address }} Bayongbong Bayongbong Kab. Garut Jawa Barat, 44162. 
-                        </div>
-                    </div>
+                <div class="text-center">
+                    <img class="img-fluid" :src="asset('images/not_found.png')">
+                    <h3 class="h4 my-10">Data Tidak Ditemukan</h3>
                 </div>
             </template>
             <b-modal v-model="modalShow" size="lg" rounded body-class="p-0" hide-footer hide-header>
@@ -229,11 +222,21 @@ export default {
                 "user.address.store");
             form.post(url, {
                 preserveScroll: true,
+                onProgress: ()=> {
+                    this.$swal.fire({
+                        title: 'Tunggu Sebentar...',
+                        text: '',
+                        imageUrl: window._asset + 'media/loading.gif',
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                    });
+                },
                 onSuccess: () => {
                     this.$swal.fire({
                         icon: 'success',
                         title: 'Success',
                         text: `Alamat Baru Berhasil Ditambahkan!`,
+                        showConfirmButton : false,
                     });
                     this.reset();
                 },

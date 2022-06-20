@@ -165,7 +165,7 @@
                     </template>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" v-if="status != 'done'">
                 <button type="button" class="btn btn-primary btn-noborder btn-block" @click.prevent="validate(data)">
                     <i class="fa fa-check"></i> Validate
                 </button>

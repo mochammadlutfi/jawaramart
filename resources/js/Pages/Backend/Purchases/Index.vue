@@ -48,7 +48,7 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Invoice No</th>
-                                <th>Customer</th>
+                                <th>Supplier</th>
                                 <th>Status</th>
                                 <th>Payment Status</th>
                                 <th>Total Amount</th>

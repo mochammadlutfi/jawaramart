@@ -8,10 +8,6 @@
                         <i class="si si-trash"></i>
                         Delete {{ selected.length }} Selected
                     </button>
-                    <Link class="btn btn-sm btn-secondary" :href="route('admin.product.create')">
-                        <i class="si si-plus"></i>
-                        Create
-                    </Link>
                 </div>
             </div>
             <div class="block block-rounded block-shadow block-bordered d-md-block d-none mb-10">
@@ -51,15 +47,12 @@
                         <thead class="thead-light">
                             <tr>
                                 <th width="2%">
-                                    <div class="custom-control custom-checkbox mb-5">
-                                        <input class="custom-control-input" type="checkbox" id="checkAll" v-model="selectAll" @click="select">
-                                        <label class="custom-control-label" for="checkAll"></label>
-                                    </div>
+                                    <b-form-checkbox id="selectAll" name="selectAll" v-model="selectAll"></b-form-checkbox>
                                 </th>
                                 <th width="45px">Image</th>
                                 <th>Name</th>
                                 <th>Email</th>
-                                <th>phone</th>
+                                <th>Total Spending</th>
                                 <th width="10%"></th>
                             </tr>
                         </thead>
@@ -78,15 +71,18 @@
                             <template v-if="Object.values(dataList.data).length">
                                 <tr v-for="data in dataList.data" :key="data.id">
                                     <td>
-                                        <label class="custom-control custom-checkbox">
-                                            <input class="custom-control-input" :id="data.id" type="checkbox" :value="data.id" v-model="selected">
-                                            <label class="custom-control-label" :for="data.id"></label>
-                                        </label>
+                                        <b-form-checkbox
+                                            :id="'data-'+data.id"
+                                            v-model="selected"
+                                            :name="'data-'+data.id"
+                                            :value="data.id"
+                                            >
+                                        </b-form-checkbox>
                                     </td> 
                                     <td> <img class="img-avatar  img-avatar32" :src="data.avatar_url" style="max-width:45px"></td>
                                     <td>{{ data.name }}</td>
                                     <td>{{ data.email }}</td>
-                                    <td>{{ data.total_stock }}</td>
+                                    <td>{{ currency(parseFloat(data.sale_count)) }}</td>
                                     <th>
                                         <a :href="route('admin.customer.show', { id : data.id})" class="btn btn-sm btn-secondary">
                                             <i class="si si-eye mr-1"></i>Detail
@@ -136,6 +132,14 @@ export default {
     watch: {
         search: function () {
             this.doSearch() 
+        },
+        selectAll: function(val){
+			this.selected = [];
+            if(val){
+                this.dataList.data.forEach((value, index) => {
+                    this.selected.push(value.id)
+                });
+            }
         }
     },
     props: {

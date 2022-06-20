@@ -16,7 +16,7 @@ class ProductVariant extends Model
     ];
 
     protected $fillable = [
-        'variant', 'sku', 'purchase_price', 'sell_price', 'stock', 'product_id',
+        'variant', 'sku', 'purchase_price', 'sell_price', 'product_id',
     ];
 
     public function product()
@@ -27,11 +27,11 @@ class ProductVariant extends Model
     
     public function stock()
     {
-        return $this->hasMany(ProductStock::class, 'product_id');
+        return $this->hasOne(ProductStock::class, 'variant_id');
     }
 
     
-    public function line()
+    public function sale()
     {
         return $this->hasOne(SaleLine::class, 'variant_id');
     }

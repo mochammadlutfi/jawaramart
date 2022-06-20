@@ -69,7 +69,7 @@
                                         </div>
                                         <input type="search" class="form-control pl-0" placeholder="Scan / Enter Product Name" autofocus>
                                         <div class="input-group-append">
-                                            <BrowseProduct @select="data => addCart(data)"/>
+                                            <BrowseProduct @select="data => addCart(data)" type="purchase"/>
                                         </div>
                                     </div>
                                 </div>
@@ -307,6 +307,7 @@ export default {
                 discount_value : 0,
                 subtotal : null,
             },
+            removed : [],
             title : 'Create New Purchase Order',
             
         }
@@ -418,6 +419,10 @@ export default {
         deleteCart(variant_id) {
             for (var i = 0; i < this.lines.length; i++) {
                 if (variant_id === this.lines[i].variant_id) {
+                    console.log(this.lines[i].id);
+                    if(this.lines[i].id){
+                        this.removed.push(this.lines[i].id);
+                    }
                     this.lines.splice(i, 1);
                     this.CaclulTotal();
                 }
@@ -475,7 +480,7 @@ export default {
         ModalUpdateProduct(detail){
             this.detail = {};
             // this.detail = detail;
-            this.detail.id = detail.id;
+            this.detail.product_id = detail.product_id;
             this.detail.variant_id = detail.variant_id;
             this.detail.name = detail.name;
             this.detail.price = detail.price;
@@ -576,7 +581,8 @@ export default {
             let data = {};
             data = Object.assign(data, this.form)
             let lines = {
-                lines : this.lines
+                lines : this.lines,
+                removed : this.removed,
             }
             data = Object.assign(data, lines)
 
@@ -621,7 +627,8 @@ export default {
                     this.data.line.forEach((value, index) => {
                         
                         let line = {
-                            product_id : value.id,
+                            id : value.id,
+                            product_id : value.product_id,
                             name : value.product.name,
                             variant_id : value.variant_id,
                             variant_name : '',
@@ -634,7 +641,6 @@ export default {
                             tax_id : value.tax_id,
                             tax_amount : value.tax_amount,
                         }
-                        // console.log(value);
                        this.lines.push(line);
                     });
                 }

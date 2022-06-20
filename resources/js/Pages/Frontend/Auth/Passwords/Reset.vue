@@ -13,7 +13,7 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <PasswordInput v-model="form.password" :error="errors.password" id="field-password"/>
-                            <div v-if="errors.password" class="invalid-feedback">
+                            <div v-if="errors.password" class="text-danger text-sm">
                                 {{ errors.password[0] }}
                             </div>
                         </div>
@@ -22,12 +22,12 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <PasswordInput v-model="form.password_confirmation" :error="errors.password_confirmation" id="field-password_confirmation"/>
-                            <div v-if="errors.password_confirmation" class="invalid-feedback">
+                            <div v-if="errors.password_confirmation" class="text-danger">
                                 {{ errors.password_confirmation[0] }}
                             </div>
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-block">
+                            <button type="submit" class="btn btn-primary btn-block" :disabled="loading">
                                 Konfirmasi
                             </button>
                         </div>
@@ -90,9 +90,6 @@ export default {
                     this.$swal.close();
                 },
             });
-            // this.form.post(this.route('login'), {
-            //     onFinish: () => this.form.reset('password'),
-            // })
         }
     }
  }

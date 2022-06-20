@@ -37,7 +37,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-block">
+                            <button type="submit" class="btn btn-primary btn-block" :disabled="loading">
+                                <b-spinner small v-if="loading"></b-spinner>
                                 Masuk Sekarang
                             </button>
                         </div>
@@ -74,7 +75,11 @@ export default {
 
     methods: {
         submit() {
+            this.loading = true;
             this.form.post(this.route('login'), {
+                onSuccess :() => {
+                    this.loading = false;
+                },
                 onFinish: () => this.form.reset('password'),
             })
         }

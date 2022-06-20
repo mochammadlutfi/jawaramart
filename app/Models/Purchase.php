@@ -22,7 +22,7 @@ class Purchase extends Model
     ];
 
     protected $appends = [
-        'total_paid',
+        'total_paid', 'to_pay'
     ];
 
 
@@ -46,8 +46,16 @@ class Purchase extends Model
 
     public function getTotalPaidAttribute()
     {
-        $data = $this->payment()->sum('amount_received');
+        $data = $this->payment()->sum('amount');
         return (float)$data;
+    }
+
+    public function getToPayAttribute()
+    {
+        $payment = $this->payment()->sum('amount');
+        $amount_due = $this->grand_total;
+
+        return abs((float)$payment - (float)$amount_due);
     }
 
 }

@@ -32,9 +32,9 @@ class PaymentMethod extends Model
 
     public function getImageUrlAttribute($value)
     {
-        if(file_exists( public_path() . '/' . $this->attributes['image']) && $this->attributes['image'] !== null){
-            return asset($this->attributes['image']);
-        }
+        // if(file_exists( public_path() . '/' . $this->attributes['image']) && $this->attributes['image'] !== null){
+        //     return asset($this->attributes['image']);
+        // }
         
         return asset('media/placeholder/product.png');
     }

@@ -55,6 +55,10 @@
                                 <i class="fi fi-rs-heart"></i>
                                 <span class="font-w600">Wishlist</span>
                             </a>
+                            <a class="dropdown-item" :href="route('user.address.index')">
+                                <i class="si si-map"></i>
+                                <span class="font-w600">Buku Alamat</span>
+                            </a>
                             <a class="dropdown-item" :href="route('user.settings.index')">
                                 <i class="fi fi-rs-settings"></i>
                                 <span class="font-w600">Pengaturan</span>

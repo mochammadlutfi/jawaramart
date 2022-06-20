@@ -4,20 +4,39 @@
             <div class="content-heading pt-0 mb-3">
                 Purchase Detail <small>{{ data.ref }}</small>
                 <div class="float-right">
-                    <button type="button" class="btn btn-secondary btn-sm" @click.prevent="confirmOrder('pending')" v-if="data.status == 'draft'">
-                        <i class="si si-check mr-1"></i>
-                        Confirm
-                    </button>
+                    <a class="btn btn-secondary btn-sm" :href="route('admin.purchase.return.create', {id : data.id})" v-if="data.status == 'done'">
+                        <i class="fas fa-undo mr-1"></i>
+                        Create Purchase Return
+                    </a>
+
                     <button type="button" class="btn btn-secondary btn-sm" @click.prevent="confirmOrder('ordered')" v-if="data.status == 'pending'">
-                        <i class="fa fa-truck mr-1"></i>
-                        Ordered
+                        <i class="si si-check mr-1"></i>
+                        Confirm Order
                     </button>
+
                     <button type="button" class="btn btn-secondary btn-sm" @click.prevent="confirmOrder('done')" v-if="data.status == 'ordered'">
                         <i class="si si-check mr-1"></i>
                         Recieved
                     </button>
+                    
+                    <b-dropdown id="dropdown-1" text="Actions" size="sm" right >
+                        <a class="dropdown-item" v-if="hasPermission('Purchase Order', 'delete') && data.status == 'draft'"
+                         :href="route('admin.purchase.order.edit', { id : data.id})">
+                            <i class="si si-note mr-3"></i>
+                            <span class="font-w600">Edit</span>
+                        </a>
+                        <b-dropdown-item v-if="hasPermission('Purchase Order', 'delete') && data.status == 'draft'" @click="destroy(data.id)">
+                            <i class="si si-trash mr-3"></i>
+                            <span class="font-w600">Delete</span>
+                        </b-dropdown-item>
+                        <a class="dropdown-item" :href="route('admin.purchase.order.edit', { id : data.id})">
+                            <i class="si si-printer mr-3"></i>
+                            <span class="font-w600">Print PDF</span>
+                        </a>
+                    </b-dropdown>
                 </div>
             </div>
+
             <div class="block block-rounded block-shadow mb-10">
                 <div class="block-content">
                     <div class="row">
@@ -28,7 +47,7 @@
                             <div>{{ data.supplier.phone }}</div>
                         </div>
                         <div class="mb-4 col-sm-12 col-md-6 col-lg-6">
-                            <h5 class="font-weight-bold">Invoice Info</h5>
+                            <h5 class="font-weight-bold">Bill Info</h5>
                             <div>Payment Status : 
                                 <span class="badge badge-primary" v-if="data.payment_status == 'paid'">Paid</span>
                                 <span class="badge badge-warning" v-else-if="data.payment_status == 'partial'">Partial</span>
@@ -97,12 +116,12 @@
                                     <td class="text-right">{{ currency(data.grand_total) }}</td>
                                 </tr>
                                 <tr class="table-success">
-                                    <th colspan="6" class="font-w600 text-right">Total Due:</th>
+                                    <th colspan="6" class="font-w600 text-right">Total Paid:</th>
                                     <td class="text-right">{{ currency(data.total_paid) }}</td>
                                 </tr>
                                 <tr>
-                                    <th colspan="6" class="font-w600 text-right">Total Remaining:</th>
-                                    <td class="text-right">{{ currency(data.grand_total - data.total_paid) }}</td>
+                                    <th colspan="6" class="font-w600 text-right">Total Due:</th>
+                                    <td class="text-right">{{ currency(data.to_pay) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -111,136 +130,20 @@
             </div>
 
             <!-- Sale Payment -->
-            <div class="content-heading pt-10">
-                Payment ({{ data.payment.length }})
-                <div class="float-right">
-                    <button type="button" class="btn btn-sm btn-secondary" @click.prevent="$bvModal.show('payment')">
-                        <i class="si si-plus"></i>
-                        Create
-                    </button>
-                </div>
-            </div>
-            <div class="block block-rounded block-shadow">
-                <div class="block-content p-0">
-                    <div class="table-responsive">
-                        <table class="table table-borderless table-striped table-vcenter mb-0">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Date</th>
-                                    <th>Reference No</th>
-                                    <th>Amount</th>
-                                    <th>Payment Method</th>
-                                    <th>Payment Note</th>
-                                </tr>
-                            </thead>
-                            <tbody v-if="data.payment.length">
-                                <tr v-for="(p, i) in data.payment" :key="i">
-                                    <td>{{ i+1 }}</td>
-                                    <td>{{ format_date(p.created_at) }}</td>
-                                    <td>{{ p.ref }}</td>
-                                    <td>{{ currency(p.amount) }}</td>
-                                    <td>
-                                        {{ p.payment_method.name }}
-                                    </td>
-                                    <td>{{ p.note }}</td>
-                                </tr>
-                            </tbody>
-                            <tbody v-else>
-                                <tr>
-                                    <td colspan="7">Payment Not Found</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <payment-table type="App\Models\Purchase" :id="data.id" :amount_due="data.to_pay" :url="this.route('admin.purchase.order.payment')"/>
         </div>
 
-        <!-- Payment Modal -->
-        <b-modal id="payment" ref="payment" size="lg" content-class="rounded" body-class="p-0" centered no-close-on-backdrop hide-footer hide-header>
-            <form @submit.prevent="submitPayment">
-                <div class="block block-rounded block-transparent mb-0">
-                    <div class="block-header block-header-default">
-                        <h3 class="block-title">Create Payment</h3>
-                        <div class="block-options">
-                            <button type="button" class="btn-block-option" @click="$bvModal.hide('payment')">
-                                <i class="fa fa-fw fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="block-content font-size-sm">
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label for="payment-recieved">Date</label>
-                                    <flat-pickr class="bg-white" :config="config" v-bind:class="{'form-control':true , 'is-invalid' : errors.date} " v-model="FormPayment.date"></flat-pickr>
-                                </div>
-                                <div class="form-group">
-                                    <label for="payment-recieved">Payment Method</label>
-                                    <v-select
-                                        v-model="FormPayment.payment_method"
-                                        :reduce="label => label.value"
-                                        placeholder="Choose"
-                                        :options="
-                                            [
-                                                {label: 'Cash', value: 'cash'},
-                                                {label: 'Bank Transfer', value: 'transfer'},
-                                                {label: 'Other', value: 'other'},
-                                            ]"
-                                    ></v-select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="amount-recieved">Amount Received</label>
-                                    <CurrencyInput v-model="FormPayment.amount_received" id="amount-recieved" class="form-control"/>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group">
-                                    <label for="payment-ref">Reference No</label>
-                                    <input type="text" class="form-control" id="payment-ref" v-model="FormPayment.ref">
-                                </div>
-                                <div class="form-group">
-                                    <label for="amount-due">Amount Due</label>
-                                    <div class="font-w600">{{ currency(duePayment) }}</div>
-                                </div>
-                                <div class="form-group" v-if="FormPayment.payment_method == 'transfer'">
-                                    <label for="payment-change">Bank</label>
-                                    <div>{{ currency(FormPayment.change) }}</div>
-                                </div>
-                                <div class="form-group" v-else-if="FormPayment.payment_method == 'cash'">
-                                    <label for="payment-change">Change</label>
-                                    <div>{{ currency(FormPayment.change) }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger btn-noborder" @click.prevent="$bvModal.hide('payment')">
-                        <i class="fa fa-close"></i> Cancel
-                    </button>
-                    <button type="submit" class="btn btn-primary btn-noborder">
-                        <i class="fa fa-check"></i> Save
-                    </button>
-                </div>
-            </form>
-        </b-modal>
     </BaseLayout>
 </template>
 
 <script>
 import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import moment from 'moment';
-import flatPickr from 'vue-flatpickr-component';
-import CurrencyInput  from '@/components/Form/CurrencyInput.vue';
-import vSelect from 'vue-select';
+import PaymentTable from '../Payment/PaymentTable.vue';
 export default {
     components: {
         BaseLayout,
-        CurrencyInput,
-        flatPickr,
-        vSelect,
+        PaymentTable
     },
     props: {
         data : Object,
@@ -342,7 +245,33 @@ export default {
                     this.$swal.close();
                 },
             });
-        }
+        },
+        destroy: function (id) {
+            this.$swal.fire({
+                icon: 'warning',
+                title: 'Are you sure?',
+                text: `You won't be able to revert this!`,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete it',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.$inertia.delete(this.route('admin.purchase.order.delete', id), {
+                        preserveScroll: true,
+                        onSuccess: () => {
+                            this.reset();
+                            return this.$swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: `Purchase order deleted!`,
+                                showConfirmButton : false,
+                                showCancelButton: false,
+                                timer : 1500,
+                            });
+                        },
+                    })
+                }
+            })
+        },
     }
 }
 </script>

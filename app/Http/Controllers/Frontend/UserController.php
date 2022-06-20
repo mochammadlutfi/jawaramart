@@ -261,7 +261,7 @@ class UserController extends Controller
                 return back();
             }
             DB::commit();
-            return redirect()->route('user.profile');
+            return redirect()->route('user.settings.index');
         }
     }
 

@@ -78,7 +78,7 @@ class LoginController extends Controller
             return back()->withErrors($validator->errors());
         }else{
             $fieldType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-            if(auth()->guard('web')->attempt($request->only('email','password')))
+            if(auth()->guard('web')->attempt($request->only('email','password'), true))
             {
                 return redirect()->intended(RouteServiceProvider::HOME);
             }else{

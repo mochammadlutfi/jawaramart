@@ -41,6 +41,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
             Route::get('/edit/{id}','CustomerController@edit')->name('customer.edit');
             Route::post('/update','CustomerController@update')->name('customer.update');
             Route::delete('/delete/{id}','CustomerController@destroy')->name('customer.delete');
+            Route::get('/import', 'CustomerController@import')->name('customer.import');
         });
 
         Route::prefix('products')->group(function() {
@@ -117,6 +118,11 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
             });
         });
 
+        // Route::group(['prefix' => 'payment', 'as' => 'payment.'], function () {
+        // });
+
+
+        // Sale Order
         Route::group(['prefix' => 'sale', 'as'=>'sale.'], function () {
 
             Route::group(['prefix' => 'pos', 'as' => 'pos.'], function () {
@@ -143,8 +149,20 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::post('/update','SaleOrderController@update')->name('update');
                 Route::delete('/delete/{id}','SaleOrderController@destroy')->name('delete');
                 Route::post('/update-status','SaleOrderController@update_status')->name('update_status');
+                Route::get('/print/{id}', 'SaleOrderController@print')->name('print');
             });
 
+            Route::group(['prefix' => 'return', 'as' => 'return.'], function () {
+                Route::get('/', 'SaleReturnController@index')->name('index');
+                Route::get('/create/{id}', 'SaleReturnController@create')->name('create');
+                Route::post('/store','SaleReturnController@store')->name('store');
+                Route::post('/payment','SaleReturnController@payment')->name('payment');
+                Route::get('/show/{id}', 'SaleReturnController@show')->name('show');
+                Route::get('/edit/{id}', 'SaleReturnController@edit')->name('edit');
+                Route::post('/update','SaleReturnController@update')->name('update');
+                Route::delete('/delete/{id}','SaleReturnController@destroy')->name('delete');
+                Route::post('/update-status','SaleReturnController@update_status')->name('update_status');
+            });
             
             Route::group(['prefix' => 'payment', 'as' => 'payment.'], function () {
                 Route::get('/', 'SalePaymentController@index')->name('index');
@@ -159,6 +177,8 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
             
         });
 
+
+        // Purchase order
         Route::group(['prefix' => 'purchase', 'as'=>'purchase.'], function () {
 
             Route::group(['prefix' => 'supplier', 'as' => 'supplier.'], function () {
@@ -176,12 +196,39 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::get('/', 'PurchaseOrderController@index')->name('index');
                 Route::get('/create', 'PurchaseOrderController@create')->name('create');
                 Route::post('/store','PurchaseOrderController@store')->name('store');
+                Route::post('/payment','PurchaseOrderController@payment')->name('payment');
                 Route::get('/show/{id}', 'PurchaseOrderController@show')->name('show');
                 Route::get('/edit/{id}', 'PurchaseOrderController@edit')->name('edit');
                 Route::post('/update','PurchaseOrderController@update')->name('update');
                 Route::post('/updateStatus','PurchaseOrderController@updateStatus')->name('update_status');
                 Route::delete('/delete/{id}','PurchaseOrderController@destroy')->name('delete');
-                Route::post('/payment','PurchaseOrderController@payment')->name('payment');
+                Route::get('/print/{id}', 'PurchaseOrderController@print')->name('print');
+            });
+
+            Route::group(['prefix' => 'return', 'as' => 'return.'], function () {
+                Route::get('/', 'PurchaseReturnController@index')->name('index');
+                Route::post('/store','PurchaseReturnController@store')->name('store');
+                Route::get('/show/{id}', 'PurchaseReturnController@show')->name('show');
+                Route::get('/edit/{id}', 'PurchaseReturnController@edit')->name('edit');
+                Route::post('/update','PurchaseReturnController@update')->name('update');
+                Route::post('/updateStatus','PurchaseReturnController@updateStatus')->name('update_status');
+                Route::delete('/delete/{id}','PurchaseReturnController@destroy')->name('delete');
+                Route::get('/print/{id}', 'PurchaseReturnController@print')->name('print');
+                Route::get('/{id}/create', 'PurchaseReturnController@create')->name('create');
+                Route::post('/payment','PurchaseReturnController@payment')->name('payment');
+            });
+
+
+            
+            Route::group(['prefix' => 'payment', 'as' => 'payment.'], function () {
+                Route::get('/', 'PurchasePaymentController@index')->name('index');
+                Route::get('/create', 'PurchasePaymentController@create')->name('create');
+                Route::post('/store','PurchasePaymentController@store')->name('store');
+                Route::get('/show/{id}', 'PurchasePaymentController@show')->name('show');
+                Route::get('/edit/{id}', 'PurchasePaymentController@edit')->name('edit');
+                Route::post('/update','PurchasePaymentController@update')->name('update');
+                Route::post('/validate','PurchasePaymentController@validate')->name('validate');
+                Route::delete('/delete/{id}','PurchasePaymentController@destroy')->name('delete');
             });
             
         });
@@ -206,6 +253,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::get('/edit/{id}', 'PaymentController@edit')->name('edit');
                 Route::post('/update','PaymentController@update')->name('update');
                 Route::delete('/delete/{id}','PaymentController@destroy')->name('delete');
+                Route::get('/data','PaymentController@data')->name('data');
             });
 
             Route::group(['prefix' => 'config', 'as' => 'config.'], function () {
@@ -267,8 +315,12 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::get('/detail/{id}', 'CashController@show')->name('show');
             });
 
+        });
 
+        Route::prefix('report')->name('report.')->group(function() {
 
+            Route::get('/profit-loss', 'ReportController@getProfitLoss')->name('profit_loss');
+            Route::get('/stock', 'ReportController@getStockReport')->name('stock_report');
         });
         
 

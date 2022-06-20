@@ -48,6 +48,10 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $appends = [
         'avatar_url'
     ];
+
+    public function sale(){
+        return $this->hasMany(Sale::class, 'customer_id');
+    }
     
     public function getPhoneAttribute($value)
     {

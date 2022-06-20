@@ -297,6 +297,7 @@ export default {
             lines : [],
             detail :{
                 id : null,
+                product_id : null,
                 variant_id : null,
                 name : null,
                 price : null,
@@ -625,6 +626,7 @@ export default {
             if(this.editMode){
                 this.title = 'Update Sale Order';
                 this.form.id = this.data.id;
+                this.form.product_id = this.data.product_id;
                 this.form.ref = this.data.ref;
                 this.form.date = this.data.date;
                 this.form.discount_type = this.data.discount_type;
@@ -640,7 +642,8 @@ export default {
                     this.data.line.forEach((value, index) => {
                         
                         let line = {
-                            product_id : value.id,
+                            id : value.id,
+                            product_id : value.product_id,
                             name : value.product.name,
                             variant_id : value.variant_id,
                             variant_name : '',
@@ -653,7 +656,6 @@ export default {
                             tax_id : value.tax_id,
                             tax_amount : value.tax_amount,
                         }
-                        // console.log(value);
                        this.lines.push(line);
                     });
                 }

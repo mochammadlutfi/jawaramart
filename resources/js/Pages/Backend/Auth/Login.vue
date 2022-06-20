@@ -38,9 +38,11 @@
                                         {{ errors.password[0] }}
                                     </div>
                                 </div>
-                                <b-button type="submit" variant="primary" class="btn-noborder" block>
+                                <button type="submit" class="btn btn-primary btn-block btn-noborder" :disabled="loading">
+                                    <b-spinner small v-if="loading"></b-spinner>
+                                    <i class="si si-login" v-else></i>
                                     Login
-                                </b-button>
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -80,8 +82,13 @@ export default {
 
     methods: {
         submit() {
+            this.loading = true;
             this.form.post(this.route('admin.login'), {
-                onFinish: () => this.form.reset('password'),
+                onFinish :() => {
+                    this.$swal.close();
+                    this.form.reset('password');
+                    this.loading = false;
+                },
             })
         }
     }

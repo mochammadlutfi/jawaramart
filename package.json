@@ -64,6 +64,7 @@
         "vue-social-sharing": "^3.0.9",
         "vue-sweetalert2": "^5.0.2",
         "vue-window-size": "^0.6.2",
+        "vue2-daterange-picker": "^0.6.8",
         "vuex": "^3.5.1"
     }
 }

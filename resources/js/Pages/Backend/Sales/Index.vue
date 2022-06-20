@@ -35,6 +35,11 @@
                             Selesai <span class="badge badge-primary badge-pill">{{ overview.selesai }}</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" v-bind:class="{ 'active' :  (status == 'cancel') ? true : false }" :href="route('admin.sale.order.index', { status : 'cancel' })">
+                            Batal <span class="badge badge-primary badge-pill">{{ overview.cancel }}</span>
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="block-content p-2">

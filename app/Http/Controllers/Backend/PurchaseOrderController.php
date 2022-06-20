@@ -53,6 +53,7 @@ class PurchaseOrderController extends Controller
 
     /**
      * Show the form for creating a new resource.
+     * 
      * @return Renderable
      */
     public function create()
@@ -98,7 +99,7 @@ class PurchaseOrderController extends Controller
                 $data->total = $request->total;
                 $data->grand_total = $request->grand_total;
                 $data->staff_id = auth()->guard('admin')->user()->id;
-                $data->status = 'draft';
+                $data->status = 'pending';
                 $data->payment_status = 'unpaid';
                 $data->tax_id = $request->tax_id;
                 $data->tax_amount = $request->tax_amount;
@@ -106,7 +107,7 @@ class PurchaseOrderController extends Controller
 
                 foreach($request->lines as $i){
                     $line = new PurchaseLine();
-                    $line->product_id = $i['id'];
+                    $line->product_id = $i['product_id'];
                     $line->variant_id = $i['variant_id'];
                     $line->unit_price = $i['price'];
                     $line->net_price = $i['price'];
@@ -119,13 +120,6 @@ class PurchaseOrderController extends Controller
                     $line->sub_total = $i['subtotal'];
                     $data->line()->save($line);
                 }
-
-                // $payment = new Payment();
-                // $payment->amount = $request->grand_total;
-                // $payment->amount_received = $request->payment_received;
-                // $payment->change = $request->payment_change;
-                // $payment->payment_method_id = 1;
-                // $data->payment()->save($payment);
 
             }catch(\QueryException $e){
                 DB::rollback();
@@ -147,7 +141,7 @@ class PurchaseOrderController extends Controller
         $data = Purchase::with(['line' => function($q){
             $q->with(['product:id,name']);
         }, 'payment' => function($q){
-            $q->with(['payment_method:id,name']);
+            $q->with(['payment_method']);
         }, 'supplier', 'staff'])
         ->where('id', $id)->first();
 
@@ -155,6 +149,83 @@ class PurchaseOrderController extends Controller
             'data' => $data,
             'editMode' => true
         ]);
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     * @param Request $request
+     * @param int $id
+     * @return Renderable
+     */
+    public function update(Request $request)
+    {
+        // dd($request->all());
+        $rules = [
+            'supplier_id' => 'required',
+            'date' => 'required',
+            'status' => 'required',
+        ];
+
+        $pesan = [
+            'supplier_id.required' => 'Supplier Must Be Filled!',
+            'date.required' => 'Supplier Must Be Filled!',
+            'status.required' => 'Supplier Must Be Filled!',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $pesan);
+        if ($validator->fails()){
+            return back()->withErrors($validator->errors());
+        }else{
+            DB::beginTransaction();
+            try{
+
+                $data = Purchase::where('id', $request->id)->first();
+                $data->date = Carbon::now();
+                $data->ref = GeneralHelp::generate_ref_purchase();
+                $data->supplier_id = $request->supplier_id;
+                $data->discount_type = $request->discount_type;
+                $data->discount_amount = $request->discount_amount;
+                $data->discount_value = $request->discount_value;
+                $data->total = $request->total;
+                $data->grand_total = $request->grand_total;
+                $data->staff_id = auth()->guard('admin')->user()->id;
+                $data->tax_id = $request->tax_id;
+                $data->tax_amount = $request->tax_amount;
+                $data->save();
+
+                foreach($request->lines as $i){
+                    if(array_key_exists("id", $i)){
+                        $line_id = $i['id'];
+                    }else{
+                        $line_id = null;
+                    }
+
+                    $line = PurchaseLine::firstOrNew(['id' =>  $line_id]);
+                    $line->product_id = $i['product_id'];
+                    $line->variant_id = $i['variant_id'];
+                    $line->unit_price = $i['price'];
+                    $line->net_price = $i['price'];
+                    $line->qty = $i['qty'];
+                    $line->discount_type = $i['discount_type'];
+                    $line->discount_value = $i['discount_value'];
+                    $line->discount_amount = $i['discount_amount'] != NULL ? $i['discount_amount'] : 0 ;
+                    $line->tax_id = $i['tax_id'];
+                    $line->tax_amount = $i['tax_amount'] != NULL ? $i['tax_amount'] : 0 ;
+                    $line->sub_total = $i['subtotal'];
+                    $data->line()->save($line);
+                }
+                // if(count($request->removed)){
+                $remove = PurchaseLine::where('purchase_id', $data->id)->whereIn('id', $request->removed)->delete();
+                // }
+
+            }catch(\QueryException $e){
+                DB::rollback();
+                return back();
+            }
+            DB::commit();
+            return redirect()->route('admin.purchase.order.show', $data->id);
+        }
     }
 
     /**
@@ -183,15 +254,14 @@ class PurchaseOrderController extends Controller
      */
     public function payment(Request $request)
     {
-        // dd($request->all());
         $rules = [
-            'payment_method' => 'required',
             'amount_received' => 'required',
+            'paymenttable_type' => 'required',
         ];
 
         $pesan = [
-            'payment_method.required' => 'Payment Method Must be Filled!',
-            'amount_received.required' => 'Payment Method Must be Filled!',
+            'amount_received.required' => 'Amount Received Must Be Filled!',
+            'paymenttable_type.required' => 'Payment Type Must Be Filled!',
         ];
 
         $validator = Validator::make($request->all(), $rules, $pesan);
@@ -200,49 +270,38 @@ class PurchaseOrderController extends Controller
         }else{
             DB::beginTransaction();
             try{
-                
+                    
+                    $data = new Payment();
+                    $data->paymenttable_type = $request->paymenttable_type;
+                    $data->paymenttable_id = $request->paymenttable_id;
+                    $data->type = 'outbound';
+                    $data->amount = $request->amount;
+                    $data->amount_received = $request->amount_received;
+                    $data->payment_method_id = $request->payment_method_id;
+                    $data->change = $request->change;
+                    $data->date = Carbon::now();
+                    $data->validated_at = Carbon::now();
+                    $data->validated_by = auth()->guard('admin')->user()->id;
+                    $data->save();
 
-                $purchase = Purchase::find($request->purchase_id);
-
-                $payment = new Payment();
-                $payment->date = Carbon::parse($request->date)->format('Y-m-d');
-                $payment->amount = $request->amount;
-                $payment->amount_received = $request->amount_received;
-                $payment->change = $request->change;
-                $payment->ref = $request->ref;
-                $payment->payment_method_id = 1;
-                $purchase->payment()->save($payment);
-
-                if($purchase->total_paid > 0){
-                    if($purchase->grand_total == $purchase->total_paid){
-                        $purchase->payment_status = 'paid';
+                    $return = $request->paymenttable_type::where('id', $request->paymenttable_id)->first();
+                    if($return->to_pay == 0){
+                        $return->payment_status = 'paid';
+                    }else if($return->to_pay < $return->grand_total){
+                        $return->payment_status = 'partial';
                     }else{
-                        $purchase->payment_status = 'partial';
+                        $return->payment_status = 'unpaid';
                     }
-                }
-                $purchase->save();
+                    $return->save();
 
             }catch(\QueryException $e){
                 DB::rollback();
                 return back();
             }
             DB::commit();
-            return redirect()->route('admin.purchase.order.show', $purchase->id);
+            return redirect()->route('admin.purchase.order.show', $return->id);
         }
     }
-
-
-    /**
-     * Update the specified resource in storage.
-     * @param Request $request
-     * @param int $id
-     * @return Renderable
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
     
     /**
      * Update the specified resource in storage.
@@ -283,7 +342,17 @@ class PurchaseOrderController extends Controller
      */
     public function destroy($id)
     {
-        //
+        DB::beginTransaction();
+        try{
+            $data = Purchase::where('id', $id)->delete();
+            $line = PurchaseLine::where('purchase_id', $id)->delete();
+
+        }catch(\QueryException $e){
+            DB::rollback();
+            return back();
+        }
+        DB::commit();
+        return redirect()->route('admin.purchase.order.index');
     }
 
     private function uploadFiles($file){

@@ -11,6 +11,7 @@
         "php": "^7.3|^8.0",
         "arcanedev/laravel-settings": "^8.0",
         "artesaos/seotools": "^0.20.2",
+        "carlos-meneses/laravel-mpdf": "^2.1",
         "fruitcake/laravel-cors": "^3.0.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "inertiajs/inertia-laravel": "^0.4.4",

@@ -22,7 +22,7 @@ class Payment extends Model
 
     
     public function payment_method(){
-        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
+        return $this->belongsTo(Accounting\PaymentMethod::class, 'payment_method_id');
     }
 
     public function paymenttable()

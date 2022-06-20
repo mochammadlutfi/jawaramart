@@ -7,6 +7,9 @@
                         <h2 class="font-weight-bold mb-0">Lupa Password</h2>
                         <p>Masukan email untuk mengganti password</p>
                     </div>
+                    <div v-if="$page.props.flash.message" class="alert">
+                        {{ $page.props.flash.message }}
+                    </div>
                     <form @submit.prevent="submit">
                         <div class="form-group">
                             <label class="form-label" for="field_login-email">Alamat Email

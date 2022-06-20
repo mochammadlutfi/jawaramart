@@ -41,7 +41,8 @@ class SaleOrderController extends Controller
             'pending' => Sale::where('status', 'pending')->where('is_pos', 0)->where('payment_status', 'paid')->count(),
             'confirmed' => Sale::where('status', 'confirmed')->where('is_pos', 0)->where('payment_status', 'paid')->count(),
             'dikirim' => Sale::where('status', 'delivery')->where('is_pos', 0)->where('payment_status', 'paid')->count(),
-            'selesai' => Sale::whereIn('status', array('done', 'cancel'))->where('is_pos', 0)->where('payment_status', 'paid')->count(),
+            'selesai' => Sale::where('status', 'done')->where('is_pos', 0)->where('payment_status', 'paid')->count(),
+            'cancel' => Sale::where('status', 'cancel')->where('is_pos', 0)->count(),
         ]);
 
         $query = Sale::with('customer:id,name,avatar')->withCount(['line'])
@@ -60,7 +61,11 @@ class SaleOrderController extends Controller
         });
 
         $query->when($request->status == 'selesai', function ($q) {
-            return $q->where('status', 'done')->orwhere('status', 'cancel');
+            return $q->where('status', 'done');
+        });
+
+        $query->when($request->status == 'cancel', function ($q) {
+            return $q->where('status', 'cancel');
         });
 
         $query->when($request->search, function ($q) {
@@ -274,17 +279,6 @@ class SaleOrderController extends Controller
     public function destroy($id)
     {
         //
-    }
-
-    private function uploadFiles($file){
-        $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
-        Storage::disk('public')->putFileAs(
-            'uploads/sliders',
-            $file,
-            $file_name
-        );
-        
-        return 'uploads/sliders/'.$file_name;
     }
 
 }

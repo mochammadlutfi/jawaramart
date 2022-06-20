@@ -101,7 +101,11 @@
                 </div>
             </template>
             <template v-else>
-                Tidak ada Data
+                <div class="text-center">
+                    <img class="img-fluid" :src="asset('images/not_found.png')">
+                    <h3 class="h4 my-10">Tidak Ditemukan Transaksi Yang Berjalan</h3>
+                    <a class="btn btn-primary btn-noborder" :href="route('home')">Mulai Berbelanja</a>
+                </div>
             </template>
         </div>
     </UserLayout>
