@@ -51,23 +51,39 @@ class LoginController extends Controller
     {
         $input = $request->all();
 
+        $fieldType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $request->merge([
+            $fieldType => $request->input('email')
+        ]);
+
+        
         $rules = [
-            'email' => 'required|exists:admins,email|string',
             'password' => 'required|string'
         ];
 
         $pesan = [
-            'email.required' => 'Alamat Email Wajib Diisi!',
-            'email.exists' => 'Alamat Email Belum Terdaftar!',
             'password.required' => 'Password Wajib Diisi!',
         ];
+
+        if($fieldType == 'email'){
+            $rules['email'] = 'required|exists:admins,email';
+
+            $pesan['email.required'] = 'Alamat Email Wajib Diisi!';
+            $pesan['email.exists'] = 'Alamat Email Belum Terdaftar!';
+        }else{
+            $rules['username'] = 'required|exists:admins,username|string';
+
+            $pesan['username.required'] = 'Username Wajib Diisi!';
+            $pesan['username.exists'] = 'Username Belum Terdaftar!';
+        }
+
+
         $validator = Validator::make($request->all(), $rules, $pesan);
         if ($validator->fails()){
-            // return 
+            
             return back()->withErrors($validator->errors());
         }else{
-            $fieldType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-            if(auth()->guard('admin')->attempt($request->only('email', 'password')))
+            if(auth()->guard('admin')->attempt(array($fieldType => $input['email'], 'password' => $input['password']), true))
             {
                 return redirect()->route('admin.dashboard');
             }else{

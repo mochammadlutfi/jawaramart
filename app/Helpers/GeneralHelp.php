@@ -12,6 +12,11 @@ use App\Models\PurchaseReturn;
 use App\Models\Payment;
 class GeneralHelp
 {
+    public static function currency($value){
+        return number_format($value,0,',','.');
+    }
+
+    
     public static function generate_ref_sale()
     {
         $q = Sale::select(DB::raw('MAX(RIGHT(ref,5)) AS kd_max'));

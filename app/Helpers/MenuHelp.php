@@ -88,7 +88,12 @@ class MenuHelp
                 "name" => 'List Sale Orders',
                 "to" => 'admin.sale.order.index',
             ];
-
+            
+            $sub_menu[] = [
+                "name" => 'List Web Orders',
+                "to" => 'admin.sale.web',
+            ];
+            
             $sub_menu[] = [
                 "name" => 'List POS',
                 "to" => 'admin.sale.pos.index',
@@ -146,7 +151,6 @@ class MenuHelp
             $menu = $menu->put('sub', $sub_menu);
             $menuData->push($menu->all());
         }
-
 
         if(array_key_exists('Payment', $permission) || array_key_exists('Payment Method', $permission)){
             $menu = Collect([
@@ -209,6 +213,27 @@ class MenuHelp
             $menu = $menu->put('sub', $sub_menu);
             $menuData->push($menu->all());
         }
+        // Report
+        $menu = Collect([
+            "name" => 'Report',
+            "icon" => 'si si-printer',
+            "subActivePaths" => 'admin.report.*',
+        ]);
+
+        $sub_menu = [];
+
+        $sub_menu[] = [
+            "name" => 'Profit & Loss',
+            "to" => 'admin.report.profit_loss',
+        ];
+
+        $sub_menu[] = [
+            "name" => 'Stock Report',
+            "to" => 'admin.report.stock_report',
+        ];
+
+        $menu = $menu->put('sub', $sub_menu);
+        $menuData->push($menu->all());
 
         $settingsMenu = ['Base', 'Staff', 'Roles', 'Warehouse', 'Tax'];
         if (count(array_intersect_key(array_flip($settingsMenu), $permission)) > 0){
@@ -260,28 +285,6 @@ class MenuHelp
         }
 
         
-        if(array_key_exists('Base', $permission)){
-            $menu = Collect([
-                "name" => 'Report',
-                "icon" => 'fi fi-rs-brush',
-                "subActivePaths" => 'admin.report.*',
-            ]);
-
-            $sub_menu = [];
-
-            $sub_menu[] = [
-                "name" => 'Profit & Loss',
-                "to" => 'admin.report.profit_loss',
-            ];
-
-            $sub_menu[] = [
-                "name" => 'Stock Report',
-                "to" => 'admin.report.stock_report',
-            ];
-
-            $menu = $menu->put('sub', $sub_menu);
-            $menuData->push($menu->all());
-        }
 
 
         return $menuData->all();

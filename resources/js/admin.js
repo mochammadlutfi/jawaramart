@@ -94,7 +94,7 @@ new Vue({
                     let nameVue = parts[1].split('.')[0]
                     return require(`../../Modules/${ parts[0] }/Resources/Pages/${ nameVue }.vue`).default
                 }else{
-                    return require(`./Pages/Backend/${name}`).default
+                    return require(`./Pages/Frontend/${name}`).default
                 }
             },
         },

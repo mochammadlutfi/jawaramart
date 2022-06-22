@@ -250,16 +250,9 @@ import ProductQty from "@/components/Product/ProductQty.vue";
 import CurrencyInput  from '@/components/Form/CurrencyInput.vue';
 import BrowseProduct from '@/components/Product/ProductBrowseModal.vue';
 import _ from 'lodash';
-import { useVuelidate } from '@vuelidate/core'
-import { required, minLength, helpers , between, email, decimal, integer, max,} from '@vuelidate/validators';
 
 export default {
-    setup () { 
-        return { 
-            v$: useVuelidate(),
-
-        } 
-    },
+    name : "sale-order-form",
     components: {
         BaseLayout,
         CustomerSelect,
@@ -281,6 +274,7 @@ export default {
                 discount_value : 0,
                 status : 'draft',
                 total : 0,
+                status : null,
                 payment_status : null,
                 tax_id : null,
                 tax_amount : 0,
@@ -295,6 +289,7 @@ export default {
                 showMonths: 1,
             },
             lines : [],
+            removed : [],
             detail :{
                 id : null,
                 product_id : null,
@@ -417,6 +412,9 @@ export default {
         deleteCart(variant_id) {
             for (var i = 0; i < this.lines.length; i++) {
                 if (variant_id === this.lines[i].variant_id) {
+                    if(this.lines[i].id){
+                        this.removed.push(this.lines[i].id);
+                    }
                     this.lines.splice(i, 1);
                     this.CaclulTotal();
                 }
@@ -587,14 +585,15 @@ export default {
             let data = {};
             data = Object.assign(data, this.form)
             let lines = {
-                lines : this.lines
+                lines : this.lines,
+                removed : this.removed
             }
             data = Object.assign(data, lines)
 
             let form = this.$inertia.form(data)
             let url = this.editMode ? this.route("admin.sale.order.update") : this.route("admin.sale.order.store");
             this.$swal.fire({
-                title: 'Tunggu Sebentar...',
+                title: 'Please Wait...',
                 text: '',
                 imageUrl: window._asset + 'media/loading.gif',
                 showConfirmButton: false,
@@ -637,6 +636,8 @@ export default {
                 this.form.tax_amount = this.data.tax_amount;
                 this.form.total = this.data.total;
                 this.form.grand_total = this.data.grand_total;
+                this.form.status = this.data.status;
+                this.form.payment_status = this.data.payment_status;
 
                 if(this.data.line.length > 0){
                     this.data.line.forEach((value, index) => {

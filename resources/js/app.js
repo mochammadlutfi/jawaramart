@@ -38,7 +38,7 @@ Vue.mixin({
                 
                 return hasPermission;
             }else{
-                console.error(`Modules ${ modules } not active for this user!"`);
+                // console.error(`Modules ${ modules } not active for this user!"`);
                 return false;
             }
         },
@@ -58,6 +58,7 @@ Vue.mixin({
              });
              return formatter.format(value);
         },
+        
         toUpperCase(value){
             var str = value.toString();
             return (str + '').replace(/^([a-z])|\s+([a-z])/g, function ($1) {

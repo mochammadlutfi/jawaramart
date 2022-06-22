@@ -12,42 +12,12 @@
             </div>
             
             <div class="block block-rounded block-shadow block-bordered d-md-block d-none mb-10">
-                <ul class="nav nav-tabs nav-tabs-alt nav-fill">
-                    <li class="nav-item">
-                        <a class="nav-link" v-bind:class="{ 'active' : (status == 'pending') ? true : false }" :href="route('admin.sale.order.index')">
-                            Pesanan Baru 
-                            <span class="badge badge-primary badge-pill">{{ overview.pending }}</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" v-bind:class="{ 'active' :  (status == 'confirmed') ? true : false }" 
-                        :href="route('admin.sale.order.index', { status : 'confirmed' })">
-                            Siap Dikirim <span class="badge badge-primary badge-pill">{{ overview.confirmed }}</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" v-bind:class="{ 'active' :  (status == 'dikirim') ? true : false }" :href="route('admin.sale.order.index', { status : 'dikirim' })">
-                            Dalam Pengiriman <span class="badge badge-primary badge-pill">{{ overview.dikirim }}</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" v-bind:class="{ 'active' :  (status == 'selesai') ? true : false }" :href="route('admin.sale.order.index', { status : 'selesai' })">
-                            Selesai <span class="badge badge-primary badge-pill">{{ overview.selesai }}</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" v-bind:class="{ 'active' :  (status == 'cancel') ? true : false }" :href="route('admin.sale.order.index', { status : 'cancel' })">
-                            Batal <span class="badge badge-primary badge-pill">{{ overview.cancel }}</span>
-                        </a>
-                    </li>
-                </ul>
-
                 <div class="block-content p-2">
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="has-search">
                                 <i class="fa fa-search"></i>
-                                <input type="search" class="form-control" id="search-data-list" v-model="search" @keyup="doSearch()" @change="doSearch()">
+                                <input type="search" class="form-control" id="search-data-list" v-model="search" @keyup="doSearch()" @change="doSearch()" autofocus>
                             </div>
                         </div>
                         <div class="col-lg-3">
@@ -73,6 +43,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="block block-rounded block-shadow-2 block-bordered mb-5">
                 <div class="block-content px-0 py-0">
                     <table class="table table-striped table-vcenter table-hover mb-0">
@@ -121,8 +92,13 @@
                                 </tr>
                             </template>
                             <template v-else>
-                                <tr v-if="!Object.values(dataList.data).length">
-                                    <td>Data Kosong</td>
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="text-center">
+                                            <img class="img-fluid" :src="asset('images/not_found.png')">
+                                            <h3 class="font-size-24 font-w600 mt-3">Data Not Found</h3>
+                                        </div>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>

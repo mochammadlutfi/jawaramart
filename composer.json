@@ -11,7 +11,7 @@
         "php": "^7.3|^8.0",
         "arcanedev/laravel-settings": "^8.0",
         "artesaos/seotools": "^0.20.2",
-        "carlos-meneses/laravel-mpdf": "^2.1",
+        "barryvdh/laravel-dompdf": "^1.0",
         "fruitcake/laravel-cors": "^3.0.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "inertiajs/inertia-laravel": "^0.4.4",
@@ -31,6 +31,7 @@
     "require-dev": {
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
+        "kitloong/laravel-migrations-generator": "^6.2",
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^5.10",

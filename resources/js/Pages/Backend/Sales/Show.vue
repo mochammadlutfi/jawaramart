@@ -3,44 +3,60 @@
         <div class="content">
             <div class="content-heading pt-0 mb-3">
                 Sale Detail <small>{{ data.ref }}</small>
-                    <span class="badge badge-secondary" v-if="data.status == 'draft'">Draft</span>
-                    <span class="badge badge-warning" v-else-if="data.status == 'pending'">Pending</span>
-                    <span class="badge badge-info" v-else-if="data.status == 'confirmed'">Siap Dikirim</span>
-                    <span class="badge badge-info" v-else-if="data.status == 'delivery'">Dalam Pengiriman</span>
-                    <span class="badge badge-success" v-else-if="data.status == 'done'">Done</span>
-                    <span class="badge badge-danger" v-else>Cancel</span>
+                <span class="badge badge-secondary" v-if="data.status == 'draft'">Draft</span>
+                <span class="badge badge-warning" v-else-if="data.status == 'pending'">Pending</span>
+                <span class="badge badge-info" v-else-if="data.status == 'confirmed'">Siap Dikirim</span>
+                <span class="badge badge-info" v-else-if="data.status == 'delivery'">Dalam Pengiriman</span>
+                <span class="badge badge-success" v-else-if="data.status == 'done'">Done</span>
+                <span class="badge badge-danger" v-else>Cancel</span>
+
+
                 <div class="float-right">
-                    <a class="btn btn-secondary btn-sm" :href="route('admin.sale.return.create', {id : data.id})">
-                        <i class="si si-note mr-1"></i>
+                    <a class="btn btn-secondary btn-sm" :href="route('admin.sale.return.create', {id : data.id})" v-if="data.status == 'done'">
+                        <i class="fas fa-undo mr-1"></i>
                         Create Sale Return
                     </a>
-                    <button class="btn btn-secondary btn-sm" type="button" @click="updateStatus('confirmed')" v-if="data.status == 'pending'">
-                        <i class="si si-check mr-1"></i>
-                        Confirm Order
-                    </button>
-                    <button class="btn btn-secondary btn-sm" type="button" @click="updateStatus('delivery')" v-if="data.status == 'confirmed'">
-                        <i class="si si-check mr-1"></i>
-                        Order Sent
-                    </button>
-                    <button class="btn btn-secondary btn-sm" type="button" @click="updateStatus('cancel')" v-if="data.status == 'pending'">
+
+                    <template v-if="data.is_web">
+                        <button class="btn btn-secondary btn-sm" type="button" @click="updateStatus('confirmed')" v-if="data.status == 'pending'">
+                            <i class="si si-check mr-1"></i>
+                            Confirm Order
+                        </button>
+
+                        <button class="btn btn-secondary btn-sm" type="button" @click="updateStatus('delivery')" v-if="data.status == 'confirmed'">
+                            <i class="si si-check mr-1"></i>
+                            Order Sent
+                        </button>
+                    </template>
+                    <template v-else>
+                        <button class="btn btn-secondary btn-sm" type="button" @click="updateStatus('done')" v-if="data.status == 'pending'">
+                            <i class="si si-check mr-1"></i>
+                            Confirm Order
+                        </button>
+                    </template>
+
+                    <button class="btn btn-secondary btn-sm" type="button" @click="updateStatus('cancel')" v-if="data.status == 'cancel'">
                         <i class="si si-close mr-1"></i>
                         Cancel Order
                     </button>
+
                     <b-dropdown id="dropdown-1" text="Actions" size="sm" right >
-                        <a class="dropdown-item" v-if="hasPermission('Sales Order', 'delete') && data.status == 'draft'"
-                         :href="route('admin.purchase.order.edit', { id : data.id})">
+                        <a class="dropdown-item" v-if="hasPermission('Sale Order', 'edit') && data.status == 'draft' || data.status == 'pending' || data.status == 'cancel'"
+                         :href="route('admin.sale.order.edit', { id : data.id})">
                             <i class="si si-note mr-3"></i>
                             <span class="font-w600">Edit</span>
                         </a>
-                        <b-dropdown-item v-if="hasPermission('Sales Order', 'delete') && data.status == 'cancel'" @click="destroy(data.id)">
+                        <b-dropdown-item v-if="hasPermission('Sale Order', 'delete') && data.status == 'draft' || data.status == 'pending' || data.status == 'cancel'" @click="destroy(data.id)">
                             <i class="si si-trash mr-3"></i>
                             <span class="font-w600">Delete</span>
                         </b-dropdown-item>
-                        <a class="dropdown-item" :href="route('admin.sale.order.print', { id : data.id})">
+
+                        <a class="dropdown-item" :href="route('admin.sale.order.pdf', { id : data.id})" target="_blank">
                             <i class="si si-printer mr-3"></i>
                             <span class="font-w600">Print PDF</span>
                         </a>
                     </b-dropdown>
+
                 </div>
             </div>
             <div class="block block-rounded block-shadow mb-10">
@@ -160,43 +176,7 @@
             </div>
 
             <!-- Payment -->
-            <div class="content-heading pt-10">
-                Payment ({{ data.payment.length }})
-                <div class="float-right">
-                    <button type="button" class="btn btn-sm btn-secondary" @click.prevent="$bvModal.show('payment')">
-                        <i class="si si-trash"></i>
-                        Create
-                    </button>
-                </div>
-            </div>
-            <div class="block block-rounded block-shadow">
-                <div class="block-content p-0">
-                    <div class="table-responsive">
-                        <table class="table table-borderless table-striped table-vcenter table-sm mb-0">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Date</th>
-                                    <th>Payment Method</th>
-                                    <th>Amount</th>
-                                    <th>Payment Note</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(p, i) in data.payment" :key="i">
-                                    <td>{{ i+1 }}</td>
-                                    <td>{{ format_date(p.created_at) }}</td>
-                                    <td>
-                                        {{ p.payment_method.name }}
-                                    </td>
-                                    <td>{{ currency(p.amount) }}</td>
-                                    <td>{{ p.note }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <payment-table type="App\Models\Sale" :id="data.id" :amount_due="data.grand_total - data.total_paid" :url="this.route('admin.sale.order.payment')"/>
         </div>
 
     </BaseLayout>
@@ -210,14 +190,11 @@
 <script>
 import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import moment from 'moment';
-import flatPickr from 'vue-flatpickr-component';
-import CurrencyInput  from '@/components/Form/CurrencyInput.vue';
+import PaymentTable from '../Payment/PaymentTable.vue';
 export default {
     components: {
         BaseLayout,
-        CurrencyInput,
-        flatPickr,
-
+        PaymentTable,
     },
     props: {
         data : Object,
@@ -227,21 +204,6 @@ export default {
     data(){
         return {
             duePayment : 0,
-            FormPayment: {
-                purchase_id : null,
-                amount : null,
-                amount_received : null,
-                change : null,
-                ref : null,
-                date : new Date(),
-                payment_method_id : null,
-            },
-            config: {
-                altFormat: 'j F Y',
-                altInput: true,
-                dateFormat: 'Y-m-d',
-                showMonths: 1,
-            },
         }
     },
     mounted(){
@@ -287,8 +249,31 @@ export default {
                 },
             });
         },
-        submitPayment(){
-
+        destroy: function (id) {
+            this.$swal.fire({
+                icon: 'warning',
+                title: 'Are you sure?',
+                text: `You won't be able to revert this!`,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete it',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.$inertia.delete(this.route('admin.sale.order.delete', id), {
+                        preserveScroll: true,
+                        onSuccess: () => {
+                            this.reset();
+                            return this.$swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: `Sale order deleted!`,
+                                showConfirmButton : false,
+                                showCancelButton: false,
+                                timer : 1500,
+                            });
+                        },
+                    })
+                }
+            })
         },
     }
 }

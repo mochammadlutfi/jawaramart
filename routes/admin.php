@@ -139,6 +139,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::post('/close','POSController@close')->name('close');
             });
 
+            Route::get('/web', 'SaleOrderController@web')->name('web');
             
             Route::group(['prefix' => 'order', 'as' => 'order.'], function () {
                 Route::get('/', 'SaleOrderController@index')->name('index');
@@ -149,7 +150,8 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::post('/update','SaleOrderController@update')->name('update');
                 Route::delete('/delete/{id}','SaleOrderController@destroy')->name('delete');
                 Route::post('/update-status','SaleOrderController@update_status')->name('update_status');
-                Route::get('/print/{id}', 'SaleOrderController@print')->name('print');
+                Route::get('/pdf/{id}', 'SaleOrderController@pdf')->name('pdf');
+                Route::post('/payment','SaleOrderController@payment')->name('payment');
             });
 
             Route::group(['prefix' => 'return', 'as' => 'return.'], function () {
@@ -174,7 +176,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::post('/validate','SalePaymentController@validate')->name('validate');
                 Route::delete('/delete/{id}','SalePaymentController@destroy')->name('delete');
             });
-            
+
         });
 
 

@@ -8,17 +8,17 @@
                 <!-- Toggle Sidebar -->
                 <!-- Layout API, functionality initialized in Template._uiApiLayout() -->
                 
-                <base-layout-modifier action="sidebarMiniToggle" size="sm" variant="dual" class="mr-2 d-none d-lg-inline-block">
+                <!-- <base-layout-modifier action="sidebarMiniToggle" size="sm" variant="dual" class="mr-2 d-none d-lg-inline-block">
                     <i class="fa fa-fw fa-ellipsis-v"></i>
-                </base-layout-modifier>
+                </base-layout-modifier> -->
                 <!-- END Toggle Sidebar -->
 
                 <!-- Open Search Section -->
                 <!-- Layout API, functionality initialized in Template._uiApiLayout() -->
-                <button type="button" class="btn btn-circle btn-dual-secondary" data-toggle="layout"
+                <!-- <button type="button" class="btn btn-circle btn-dual-secondary" data-toggle="layout"
                     data-action="header_search_on">
                     <i class="fa fa-search"></i>
-                </button>
+                </button> -->
                 <!-- END Open Search Section -->
 
                 <!-- Layout Options (used just for demonstration) -->
@@ -30,10 +30,11 @@
 
             <!-- Right Section -->
             <div class="content-header-section">
-                <a class="btn btn-outline-primary btn-sm" :href="route('admin.sale.pos.create')">
+                <a class="btn btn-outline-primary btn-sm" :href="route('admin.sale.pos.create')" v-if="hasPermission('Sale Order', 'POS')">
                     <i class="fas fa-cash-register mr-1"></i>
                     POS
                 </a>
+
                 <b-dropdown variant="dual link" class="d-inline-block ml-2" menu-class="p-0 border-0 dropdown-menu-md" right no-caret ref="oneDropdownDefaultUser">
                     <template #button-content>
                         <div class="d-flex align-items-center">
