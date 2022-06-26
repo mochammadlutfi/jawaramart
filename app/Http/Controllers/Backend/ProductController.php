@@ -47,7 +47,7 @@ class ProductController extends Controller
             'sale'
         ])
         ->with([
-            'variant'
+            'variant', 'category:id,name'
         ])
         ->when($search, function($query, $search){
             $query->where('name', 'LIKE', '%' . $search . '%');
@@ -379,7 +379,7 @@ class ProductController extends Controller
         
         $j = 0;
         $no = 1;
-        // dd($importData_arr);
+        dd($importData_arr);
         DB::beginTransaction();
         try{
 
@@ -446,9 +446,6 @@ class ProductController extends Controller
         echo 'done';
     }
     
-
-    
-    
     private function uploadImage($file, $name, $id){
         $file_name = $name. '-' . uniqid() . '.' . $file->getClientOriginalExtension();
         $imgFile = Image::make($file->getRealPath());
@@ -512,6 +509,33 @@ class ProductController extends Controller
             ], 400);
 
         }
+    }
+
+    
+    /**
+     * Store a newly created resource in storage.
+     * @param Request $request
+     * @return Renderable
+     */
+    public function updateStock(Request $request)
+    {
+        DB::beginTransaction();
+        try{
+            // dd($request->all());
+            foreach($request->line as $line){
+                $data = ProductStock::firstOrNew(['product_id' =>  $line['product_id'], 'variant_id' => $line['variant_id']]);
+                $data->stock = (int)$line['stock'];
+                $data->save();
+                // dd($line);
+            }
+            
+        }catch(\QueryException $e){
+            DB::rollback();
+            // return back();
+            dd($e);
+        }
+        DB::commit();
+        return redirect()->route('admin.product.index');
     }
 
 }

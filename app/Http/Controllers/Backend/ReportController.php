@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Models\Product;
 use App\Models\ProductVariant;
-
+use App\Models\CashRegister;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -34,8 +34,8 @@ class ReportController extends Controller
     public function getProfitLoss(Request $request)
     {
 
-        $start_date = Carbon::parse($request->from)->subDay()->format('Y-m-d');
-        $end_date = Carbon::parse($request->to)->format('Y-m-d');
+        $start_date = (empty($request->from)) ? Carbon::now()->startofyear()->format('Y-m-d') : Carbon::parse($request->from)->subDay()->format('Y-m-d');
+        $end_date = (empty($request->to)) ? Carbon::now()->format('Y-m-d') : Carbon::parse($request->to)->format('Y-m-d');
 
         $data = Collect([]);
 
@@ -138,6 +138,21 @@ class ReportController extends Controller
         return Inertia::render('Backend/Report/StockReport',[
             'dataList' => $data,
         ]);
+    }
+
+    public function getCashRegister(Request $request){
+        
+        $start_date = (empty($request->from)) ? Carbon::now()->startofyear()->format('Y-m-d') : Carbon::parse($request->from)->subDay()->format('Y-m-d');
+        $end_date = (empty($request->to)) ? Carbon::now()->format('Y-m-d') : Carbon::parse($request->to)->format('Y-m-d');
+
+        $data = CashRegister::with(['staff:id,name,email,avatar'])
+        ->latest()->paginate(10);
+        
+
+        return Inertia::render('Backend/Report/CashRegister',[
+            'dataList' => $data,
+        ]);
+
     }
 
 

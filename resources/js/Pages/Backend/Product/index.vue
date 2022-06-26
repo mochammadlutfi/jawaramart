@@ -96,12 +96,14 @@
                                     <td>{{ (data.sale_count) }}x</td>
                                     <th>
                                         <b-dropdown text="Action" class="m-md-2"  size="sm">
-                                            <Link :href="route('admin.product.show', {id : data.id})" as="button" class="dropdown-item" type="button">
-                                                Detail
-                                            </Link>
-                                            <Link :href="route('admin.product.edit', {id : data.id})" as="button" class="dropdown-item" type="button">
+                                            <a :href="route('admin.product.edit', {id : data.id})" class="dropdown-item">
+                                                <i class="si si-note mr-3"></i>
                                                 Edit
-                                            </Link>
+                                            </a>
+                                            <a href="javascript:void(0)" class="dropdown-item" @click="updateStock(data)">
+                                                <i class="si si-note mr-3"></i>
+                                                Update Stock
+                                            </a>
                                         </b-dropdown>
                                     </th>
                                 </tr>
@@ -116,6 +118,8 @@
                 </div>
             </div>
         </div>
+        <product-stock-update ref="ProductStockUpdate"/>
+    
     </BaseLayout>
 </template>
 
@@ -124,12 +128,12 @@ import { Link } from '@inertiajs/inertia-vue';
 import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import moment from 'moment';
 import _ from 'lodash';
-import hasPermission from '@/Utils/permission';
-
+import ProductStockUpdate from './UpdateStock.vue';
 export default {
     components: {
         BaseLayout,
         Link,
+        ProductStockUpdate
     },
     data(){
         return {
@@ -165,7 +169,6 @@ export default {
         dataList: Object,
     },
     methods :{
-        hasPermission,
         sort:function(s) {
 
             if(s === this.currentSort) {
@@ -234,6 +237,7 @@ export default {
                 return moment(String(value)).format('DD MMM YYYY')
             }
         },
+        
         doSearch : _.throttle(function(){
 
             let params = {
@@ -246,6 +250,10 @@ export default {
                 preserveScroll : true,
             })
         }, 200),
+        updateStock(product){
+            
+            this.$refs.ProductStockUpdate.openModal(product);
+        }
     }
 }
 </script>

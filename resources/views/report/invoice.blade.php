@@ -24,13 +24,7 @@
             text-decoration: none;
         }
 
-        .invoice, .information, .header {
-            padding: 10px;
-        }
-        /* .information {
-            color: #FFF;
-        } */
-        .information {
+        .invoice, .information, .header, .payment {
             padding: 10px;
         }
 
@@ -47,11 +41,17 @@
             width: 100%;
         }
 
+        
+        .payment table {
+            padding: 10px;
+        }
+
         .invoice table td {
-            padding : 10px;
+            padding : 10px 10px 10px 0;
         }
 
         .invoice table th {
+            text-align: left;
             padding: 18px 16px;
             border-top: 1px solid #31353B;
             border-bottom: 1px solid #31353B;
@@ -67,6 +67,12 @@
 
         .invoice table tfoot td.noval {
             border-top: none;
+        }
+
+        .payment table thead th {
+            font-weight: normal;
+            padding : 10px 10px 10px 0;
+            text-align: left;
         }
 
 
@@ -133,9 +139,9 @@
                 <thead>
                     <tr>
                         <th>PRODUCT INFO</th>
-                        <th>QTY</th>
-                        <th>UNIT PRICE</th>
-                        <th>TOTAL</th>
+                        <th width="5%">QTY</th>
+                        <th width="20%">UNIT PRICE</th>
+                        <th width="20%">TOTAL</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -152,34 +158,64 @@
                 <tfoot>
                     <tr>
                         <td colspan="2" class="noval"></td>
-                        <td align="left">TOTAL ( {{ $data->line->sum('qty') }} product)</td>
+                        <td align="left" style="font-weight: 700">TOTAL ( {{ $data->line->sum('qty') }} product)</td>
                         <td align="left" class="gray">Rp {{ number_format($data->total,0,',','.') }}</td>
                     </tr>
                     <tr>
                         <td colspan="2" class="noval"></td>
-                        <td align="left">DISCOUNT</td>
+                        <td align="left" style="font-weight: 700">DISCOUNT</td>
                         <td align="left" class="gray">Rp {{ number_format($data->shipping_cost,0,',','.') }}</td>
                     </tr>
                     <tr>
                         <td colspan="2" class="noval"></td>
-                        <td align="left">TAX</td>
+                        <td align="left" style="font-weight: 700">TAX</td>
                         <td align="left" class="gray">Rp {{ number_format($data->shipping_cost,0,',','.') }}</td>
                     </tr>
                     <tr>
                         <td colspan="2" class="noval"></td>
-                        <td align="left">SHIPPING</td>
+                        <td align="left" style="font-weight: 700">SHIPPING</td>
                         <td align="left" class="gray">Rp {{ number_format($data->shipping_cost,0,',','.') }}</td>
                     </tr>
                     <tr>
                         <td colspan="2" class="noval"></td>
-                        <td align="left">GRAND TOTAL</td>
+                        <td align="left" style="font-weight: 700">GRAND TOTAL</td>
                         <td align="left" class="gray">Rp {{ number_format($data->grand_total,0,',','.') }}</td>
                     </tr>
                 </tfoot>
             </table>
         </div>
+
+        <div class="payment">
+            <table width="100%" style="border-top : 1px solid #e5e7e9">
+                <thead>
+                    <tr>
+                        <th>
+                            Shipping Info
+                        </th>
+                        <th width="40%">
+                            Payment Method
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+
+                        </td>
+
+                        <td>
+                            @foreach ($data->payment as $p)
+                                <div style="font-weight: 700">
+                                    {{ $p->payment_method->name }}
+                                </div>
+                            @endforeach
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     
-        <div class="footer" style="position: absolute; bottom: 0;">
+        {{-- <div class="footer" style="position: absolute; bottom: 0;">
             <table width="100%">
                 <tr>
                     <td align="left" style="width: 50%;">
@@ -191,7 +227,7 @@
                 </tr>
     
             </table>
-        </div>
+        </div> --}}
     </div>
 </body>
 

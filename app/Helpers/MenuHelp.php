@@ -232,6 +232,11 @@ class MenuHelp
             "to" => 'admin.report.stock_report',
         ];
 
+        $sub_menu[] = [
+            "name" => 'Cash Register',
+            "to" => 'admin.report.cash_register',
+        ];
+
         $menu = $menu->put('sub', $sub_menu);
         $menuData->push($menu->all());
 

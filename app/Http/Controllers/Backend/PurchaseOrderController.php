@@ -238,7 +238,7 @@ class PurchaseOrderController extends Controller
         $data = Purchase::with(['line' => function($q){
             $q->with(['product:id,name']);
         }, 'payment' => function($q){
-            $q->with(['payment_method:id,name']);
+            $q->with(['payment_method:id,name,image']);
         }, 'supplier', 'staff'])
         ->where('id', $id)->first();
 

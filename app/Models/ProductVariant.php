@@ -19,6 +19,11 @@ class ProductVariant extends Model
         'variant', 'sku', 'purchase_price', 'sell_price', 'product_id',
     ];
 
+    
+    protected $appends = [
+        'current_stock',
+    ];
+
     public function product()
     {
         return $this->hasMany(Product::class, 'product_id');
@@ -29,7 +34,6 @@ class ProductVariant extends Model
     {
         return $this->hasOne(ProductStock::class, 'variant_id');
     }
-
     
     public function sale()
     {
@@ -40,5 +44,9 @@ class ProductVariant extends Model
     // {
     //     return "Rp" .number_format($value,0,',','.');
     // }
+
+    public function getCurrentStockAttribute(){
+        return (int)$this->stock()->sum('stock');
+    }
 
 }

@@ -54,6 +54,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
             Route::delete('/delete/{id}','ProductController@destroy')->name('product.delete');
             Route::get('/data', 'ProductController@data')->name("product.data");
             Route::get('/import', 'ProductController@import')->name("product.import");
+            Route::post('/update-stock','ProductController@updateStock')->name('product.update_stock');
     
             Route::group(['prefix' => 'category'], function () {
                 Route::get('/', 'ProductCategoryController@index')->name('product.category.index');
@@ -323,6 +324,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
 
             Route::get('/profit-loss', 'ReportController@getProfitLoss')->name('profit_loss');
             Route::get('/stock', 'ReportController@getStockReport')->name('stock_report');
+            Route::get('/cash-register', 'ReportController@getCashRegister')->name('cash_register');
         });
         
 
