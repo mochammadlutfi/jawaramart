@@ -35,7 +35,7 @@
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label" for="field-kategori">Category</label>
                             <div class="col-lg-9">
-                                <CategorySelector @done="(category) => category_selected = category" :error="errors.category_id" :category_id="form.category_id"/>
+                                <CategorySelector @done="(category) => form.category_id = category" :error="errors.category_id" :data="form.category_id"/>
                             </div>
                         </div>
                         
@@ -61,19 +61,19 @@
                         <div class="form-group row" v-if="!form.has_variant">
                             <label class="col-lg-3 col-form-label" for="field-sku">SKU</label>
                             <div class="col-lg-7">
-                                <input type="text" class="form-control" id="field-sku" v-model="variant[0].sku">
+                                <input type="text" class="form-control" id="field-sku" v-model="form.sku">
                             </div>
                         </div>
                         <div class="form-group row" v-if="!form.has_variant">
                             <label class="col-lg-3 col-form-label" for="field-sell_price">Sell Price</label>
                             <div class="col-lg-7">
-                                <CurrencyInput v-model="variant[0].sell_price" class="form-control"/>
+                                <CurrencyInput v-model="form.sell_price" class="form-control"/>
                             </div>
                         </div>
                         <div class="form-group row" v-if="!form.has_variant">
                             <label class="col-lg-3 col-form-label" for="field-purchase_price">Purchase Price</label>
                             <div class="col-lg-7">
-                                <CurrencyInput v-model="variant[0].purchase_price" class="form-control"/>
+                                <CurrencyInput v-model="form.purchase_price" class="form-control"/>
                             </div>
                         </div>
 
@@ -253,6 +253,9 @@ export default {
                 var2_name : null,
                 var2_value : null,
                 images : [],
+                sell_price : null,
+                purchase_price : null,
+                sku : null,
             },
             variant : [{
                 id : null,
@@ -322,7 +325,6 @@ export default {
                 preserveScroll: true,
                 resetOnSuccess: true,
                 onSuccess: () => {
-
                     this.editModeActive();
 
                     return this.$swal.fire({
@@ -336,6 +338,9 @@ export default {
                             this.$inertia.visit(this.route("admin.product.create"));
                         }
                     });
+                },
+                onFinish :() => {
+                    this.$swal.close();
                 },
                 onerror: () => {
                     return this.$swal.close();

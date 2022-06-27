@@ -77,7 +77,7 @@
               </div>
               <div class="block-content block-content-full text-right border-top">
                 <b-button variant="alt-primary" class="mr-1" @click="close">Close</b-button>
-                <b-button variant="primary" @click="close">Ok</b-button>
+                <b-button variant="primary" @click="select">Ok</b-button>
               </div>
             </div>
         </b-modal>
@@ -97,21 +97,18 @@ export default {
             parentSelected : null,
             childSelected : null,
             grandChildSelected : null,
+            category_id : this.data,
         }
     },
     props : {
-        error : Object,
-        category_id : Number
-    },
-    watch: {
-        category_id(value){
-            if(value){
-                this.findCategoryTree();
-            }
-        },
+        error : Array,
+        data : Number
     },
     mounted() {
         // alert(this.category_id);
+        // if(this.category_id){
+        //     this.findCategoryTree();
+        // };
         this.getCategory();
     },
     methods: {
@@ -166,7 +163,8 @@ export default {
                     this.grandchild = null;
                 }
                 this.category_id = d.id;
-                this.$emit('done', this.category_id)
+                this.$emit('done', this.category_id);
+                this.modalShow = false;
             }
 
         },

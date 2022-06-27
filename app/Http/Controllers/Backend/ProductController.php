@@ -96,8 +96,8 @@ class ProductController extends Controller
             'category_id.required' => 'Kategori Produk Wajib Diisi!',
         ];
 
-        if(count($request->variant) > 1)
-        {
+        if(count($request->variant) > 1){
+            
         }else{
             $rules['sell_price'] = 'required';
             $rules['purchase_price'] = 'required';
