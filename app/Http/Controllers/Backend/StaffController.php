@@ -289,4 +289,52 @@ class StaffController extends Controller
         
         return 'uploads/staff/'.$file_name;
     }
+
+    
+    public function password()
+    {
+        return Inertia::render('Backend/Settings/Staff/Password',[
+        ]);
+    }
+
+    
+    public function passwordUpdate(Request $request)
+    {
+        $rules = [
+            'password' => 'required',
+            'new_password' => 'required',
+            'new_password_confirm' => 'required',
+        ];
+
+        $pesan = [
+            'password.required' => 'Old password must be filled',
+            'new_password.required' => 'New Password must be filled.',
+            'new_password_confirm.required' => 'Password Confirmation must be filled.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $pesan);
+        if ($validator->fails()){
+            return back()->withErrors($validator->errors());
+        }else{
+            DB::beginTransaction();
+            try{
+
+                if (Hash::check($request->password, auth()->guard('web')->user()->password)) {
+                    $data = Admin::find(auth()->guard('admin')->user()->id);
+                    $data->password = Hash::make($request->new_password);
+                    $data->save();
+                }else{
+                    return back()->withErrors([
+                        'password' => ['Curent Password Wrong!']
+                    ]);
+                }
+
+            }catch(\QueryException $e){
+                DB::rollback();
+                return back();
+            }
+            DB::commit();
+            return redirect()->route('admin.password');
+        }
+    }
 }

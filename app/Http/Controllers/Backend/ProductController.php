@@ -379,7 +379,7 @@ class ProductController extends Controller
         
         $j = 0;
         $no = 1;
-        dd($importData_arr);
+        // dd($importData_arr);
         DB::beginTransaction();
         try{
 

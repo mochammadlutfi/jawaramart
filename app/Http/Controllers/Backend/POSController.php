@@ -136,7 +136,12 @@ class POSController extends Controller
                 $data->grand_total = $request->grand_total;
                 $data->staff_id = auth()->guard('admin')->user()->id;
                 $data->status = 'done';
-                $data->payment_status = 'paid';
+                if($request->payment_method == 2){
+                    $data->payment_status = 'pending';
+                    $data->payment_due = Carbon::today()->addMonth(1)->firstOfMonth();
+                }else{
+                    $data->payment_status = 'paid';
+                }
                 $data->save();
 
                 foreach($request->lines as $i){
@@ -152,9 +157,8 @@ class POSController extends Controller
                     $line->sub_total = $i['subtotal'];
                     $data->line()->save($line);
 
-                    $s = ProductStock::where('product_id', $i['id'])->where('variant_id', $i['variant_id'])->first();
-                    $s->stock = $s->stock - $i["qty"];
-                    $s->save();
+                    $s = ProductStock::where('product_id', $i['id'])->where('variant_id', $i['variant_id'])
+                    ->decrement('stock', $i["qty"]);
                     
                     // $s = ProductStock::firstOrNew(['product_id' =>  $line->product_id, 'variant_id' =>  $line->variant_id]);
                     // $s->stock = ($s->stock != null) ? $s->stock + $line->qty : $line->qty;
@@ -165,7 +169,11 @@ class POSController extends Controller
                 $payment->amount = $request->grand_total;
                 $payment->amount_received = $request->payment_received;
                 $payment->change = $request->payment_change;
+                $payment->type = 'inbound';
                 $payment->payment_method_id = $request->payment_method;
+                if($request->payment_method != 2){
+                    $payment->validated_at = Carbon::now();
+                }
                 $data->payment()->save($payment);
 
         }catch(\QueryException $e){

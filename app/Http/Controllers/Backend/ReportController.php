@@ -128,9 +128,9 @@ class ReportController extends Controller
         }else{
             $sorted = $res->sortByDesc($sort);
         }
-
+        $date = Carbon::today()->format('d-m-Y');
         if($request->excel){
-            return Excel::download(new StockReportExport, 'contoh.xlsx');   
+            return Excel::download(new StockReportExport, 'Report Stock.xlsx');   
         }
 
         $data = (new Collection($sorted->values()))->paginate(20);

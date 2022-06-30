@@ -38,7 +38,7 @@
                 <b-dropdown variant="dual link" class="d-inline-block ml-2" menu-class="p-0 border-0 dropdown-menu-md" right no-caret ref="oneDropdownDefaultUser">
                     <template #button-content>
                         <div class="d-flex align-items-center">
-                            <img class="img-avatar img-avatar32" :src="$page.props.auth.staff.avatar_url" alt="Header Avatar" style="width: 30px;">
+                            <img class="img-avatar img-avatar48" :src="$page.props.auth.staff.avatar_url" alt="Header Avatar">
                             <span class="d-none d-sm-inline-block ml-2">{{ $page.props.auth.staff.name }}</span>
                             <i class="fa fa-fw fa-angle-down d-none d-sm-inline-block ml-1 mt-1"></i>
                         </div>
@@ -51,6 +51,9 @@
                         <Link class="dropdown-item d-flex align-items-center justify-content-between" :href="route('admin.profile')">
                             <span class="font-size-sm font-w500">Profile</span>
                         </Link>
+                        <Link :href="route('admin.password')" method="post" as="button" class="dropdown-item d-flex align-items-center justify-content-between">
+                            <span class="font-size-sm font-w500">Change Password</span>
+                        </Link >
                         <Link :href="route('admin.logout')" method="post" as="button" class="dropdown-item d-flex align-items-center justify-content-between">
                             <span class="font-size-sm font-w500">Log Out</span>
                         </Link >

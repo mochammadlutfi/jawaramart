@@ -2,22 +2,22 @@
     <BaseLayout>
         <div class="content">
             <div class="content-heading pt-0 mb-3">
-                Piutang Anggota
+                List Piutang
                 
                 <div class="float-right">
                     <button type="button" class="btn btn-primary btn-noborder btn-sm mr-2" @click="confirmPayment" v-if="selected.length">
                         <i class="si si-check mr-1"></i>
-                        Konfirmasi {{ selected.length }} data
+                        Confirm {{ selected.length }} data
                     </button>
 
                     <b-dropdown id="download" size="sm">
                     <template #button-content>
                         Download
                     </template>
-                    <b-dropdown-item :href="route('accounting.potong_gaji.exportExcel')" target="_blank">
+                    <b-dropdown-item :href="route('admin.accounting.piutang.export', {'type' : 'excel'})" target="_blank">
                         To Excel
                     </b-dropdown-item>
-                    <b-dropdown-item :href="route('accounting.potong_gaji.exportPDF')" target="_blank">
+                    <b-dropdown-item :href="route('admin.accounting.piutang.export', {'type' : 'pdf'})" target="_blank">
                         To PDF
                     </b-dropdown-item>
                 </b-dropdown>
@@ -29,16 +29,11 @@
                         <thead class="thead-light">
                             <tr>
                                 <th width="2%">
-                                    <div class="custom-control custom-checkbox mb-5">
-                                        <input class="custom-control-input" type="checkbox" id="checkAll" v-model="selectAll" @click="select">
-                                        <label class="custom-control-label" for="checkAll"></label>
-                                    </div>
+                                    <b-form-checkbox id="selectAll" name="selectAll" v-model="selectAll"></b-form-checkbox>
                                 </th>
-                                <th width="10%">ID Anggota</th>
-                                <th width="18%">Nama</th>
-                                <th width="15%">Golongan</th>
-                                <th width="15%">NIP</th>
-                                <th width="25%">Jumlah</th>
+                                <th width="10%">Customer</th>
+                                <th width="18%">Total</th>
+                                <th width="15%">Last Transaction</th>
                                 <th width="9%"></th>
                             </tr>
                         </thead>
@@ -58,20 +53,18 @@
                                 <tr v-for="(data, i) in dataList.data" :key="i">
                                     <td>
                                         <b-form-checkbox
-                                            :id="'data-'+data.anggota_id"
+                                            :id="'data-'+data.customer_id"
                                             v-model="selected"
-                                            :name="'data-'+data.anggota_id"
-                                            :value="data.anggota_id"
+                                            :name="'data-'+data.customer_id"
+                                            :value="data.customer_id"
                                             >
                                         </b-form-checkbox>
                                     </td> 
-                                    <td>{{ data.anggota_id }}</td>
-                                    <td>{{ data.nama }}</td>
-                                    <td>{{ data.golongan }}</td>
-                                    <td>{{ data.nip }}</td>
-                                    <td>{{ currency(data.jumlah) }}</td>
+                                    <td>{{ data.customer.name }}</td>
+                                    <td>{{ currency(data.grand_total) }}</td>
+                                    <td>{{ format_date(data.date) }}</td>
                                     <th>
-                                        <a :href="route('accounting.potong_gaji.show', { id : data.anggota_id,})" class="btn btn-secondary btn-sm">
+                                        <a :href="route('admin.accounting.piutang.show', { id : data.customer_id})" class="btn btn-secondary btn-sm">
                                             <i class="si si-magnifier"></i>
                                             Detail
                                         </a>
@@ -80,7 +73,12 @@
                             </template>
                             <template v-else>
                                 <tr v-if="!Object.values(dataList.data).length">
-                                    <td colspan="7">Data Kosong</td>
+                                    <td colspan="5">
+                                        <div class="text-center">
+                                            <img class="img-fluid" :src="asset('images/not_found.png')">
+                                            <h3 class="font-size-24 font-w600 mt-3">Data Not Found</h3>
+                                        </div>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -94,7 +92,7 @@
 <script>
 import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import _ from 'lodash';
-
+import moment from 'moment';
 export default {
     components: {
         BaseLayout,
@@ -117,7 +115,7 @@ export default {
             }
         },
         doSearch : _.throttle(function(){
-            this.$inertia.get(this.route('anggota.index', { search : this.search }))
+            this.$inertia.get(this.route('admin.accounting.piutang.index', { search : this.search }))
         }, 200),
         select() {
 			this.selected = [];
@@ -130,25 +128,25 @@ export default {
 		},
         confirmPayment(){
             this.$swal.fire({
-                title: 'Tunggu Sebentar...',
+                title: 'Please wait...',
                 text: '',
                 imageUrl: window._asset + 'media/loading.gif',
                 showConfirmButton: false,
-                // allowOutsideClick: false,
+                allowOutsideClick: false,
             });
             let data = {
                 ids : this.selected,
                 from : "index",
             }
             let form = this.$inertia.form(data)
-            let url = this.route("accounting.potong_gaji.confirm");
+            let url = this.route("admin.accounting.piutang.confirm");
             form.post(url, {
                 preserveScroll: true,
                 onSuccess: () => {
                     this.$swal.fire({
                         icon: 'success',
                         title: 'Success',
-                        text: `Data Berhasil Disimpan!`,
+                        text: `Payment confirmed!`,
                         showConfirmButton: false,
                     });
                 },

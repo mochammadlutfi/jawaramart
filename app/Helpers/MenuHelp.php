@@ -189,6 +189,11 @@ class MenuHelp
                     "to" => 'admin.purchase.order.create',
                 ];
             }
+            
+            $sub_menu[] = [
+                "name" => 'Piutang',
+                "to" => 'admin.accounting.piutang.index',
+            ];
 
             $menu = $menu->put('sub', $sub_menu);
             $menuData->push($menu->all());

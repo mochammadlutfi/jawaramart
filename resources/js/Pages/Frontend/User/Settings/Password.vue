@@ -5,24 +5,24 @@
                 Ubah Password
             </div>
             <div class="row">
-                <div class="col-md-6 col-xl-6">
+                <div class="col-md-6">
                     <form @submit.prevent="submit">
                         <div class="form-group">
-                            <label for="reset-password">Password Saat Ini</label>
+                            <label for="reset-password">Current Password</label>
                             <password-input :value="form.password" :error="errors.password" @input="(value) => form.password = value" id="reset-password"/>
                             <div v-if="errors.password" class="text-danger text-sm">
                                 {{ errors.password[0] }}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="reset-new_password">Password Baru</label>
+                            <label for="reset-new_password">New Password</label>
                             <password-input :value="form.new_password" :error="errors.new_password" @input="(value) => form.new_password = value" id="reset-new_password"/>
                             <div v-if="errors.new_password" class="text-danger text-sm">
                                 {{ errors.new_password[0] }}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="field-new_password_confirm">Konfirmasi Password Baru</label>
+                            <label for="field-new_password_confirm">New Password Confirmation</label>
                             <password-input :value="form.new_password_confirm" :error="errors.new_password_confirm" @input="(value) => form.new_password_confirm = value" id="reset-new_password_confirm"/>
                             <div v-if="errors.new_password_confirm" class="text-danger text-sm">
                                 {{ errors.new_password_confirm[0] }}

@@ -222,7 +222,7 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <label for="payment-methods">Payment Method</label>
-                                <div class="radio-box-group row">
+                                <!-- <div class="radio-box-group row">
                                     <label class="radio-box-container col" v-for="method in payment_methods" :key="method.id">
                                         <input type="radio" name="radio" v-model="form.payment_method" :value="method.id">
                                         <div class="radio-content">
@@ -230,6 +230,18 @@
                                             <h3 v-else>{{ method.name }}</h3>
                                         </div>
                                     </label>
+                                </div> -->
+                                <div class="form-group">
+                                    <v-select label="name"
+                                    :options="payment_methods"
+                                    :get-option-label="(option) => option.name"
+                                    v-bind:class="{'is-invalid' : errors }"
+                                    :reduce="payment_methods => payment_methods.id"
+                                    v-model="form.payment_method">
+                                        <template slot="option" slot-scope="option">
+                                            {{ option.name }}
+                                        </template>
+                                    </v-select>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -502,7 +514,7 @@ import axios from 'axios';
 import moment from 'moment';
 import reportModal from './ReportModal.vue';
 import PosTransaction from './RecentTransaction.vue';
-
+import vSelect from 'vue-select';
 export default {
     components: {
         PosProduct,
@@ -511,6 +523,7 @@ export default {
         CurrencyInput,
         vueEasyPrint,
         reportModal,
+        vSelect,
         PosTransaction
     },
     props:{
@@ -551,6 +564,7 @@ export default {
                 max_stock : null,
             },
             invoice : null,
+            errors : null,
         }
     },
     watch :{

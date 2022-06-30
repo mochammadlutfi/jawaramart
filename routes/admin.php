@@ -258,6 +258,14 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::delete('/delete/{id}','PaymentController@destroy')->name('delete');
                 Route::get('/data','PaymentController@data')->name('data');
             });
+            
+            Route::group(['prefix' => 'piutang', 'as' => 'piutang.'], function () {
+                Route::get('/', 'PiutangController@index')->name('index');
+                Route::get('/export', 'PiutangController@export')->name('export');
+                Route::post('/confirmPayment','PiutangController@confirmPayment')->name('confirm');
+                Route::get('/{id}', 'PiutangController@show')->name('show');
+                Route::get('/{id}/pdf', 'PiutangController@printPdf')->name('pdf');
+            });
 
             Route::group(['prefix' => 'config', 'as' => 'config.'], function () {
 
@@ -293,21 +301,6 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                     Route::post('/updateState','AccountController@updateState')->name('updateState');
                 });
             });
-
-            Route::group(['prefix' => 'reports', 'as' => 'report.'], function () {
-                Route::get('/simpanan', 'ReportController@simpanan')->name('simpanan');
-                Route::get('/neraca-saldo', 'ReportController@balance_sheet')->name('balance_sheet');
-            });
-            
-            Route::group(['prefix' => 'potong-gaji', 'as' => 'potong_gaji.'], function () {
-                Route::get('/', 'PotongGajiController@index')->name('index');
-                Route::get('/export-excel', 'PotongGajiController@exportExcel')->name('exportExcel');
-                Route::get('/export-pdf', 'PotongGajiController@exportPDF')->name('exportPDF');
-                Route::post('/confirmPayment','PotongGajiController@confirmPayment')->name('confirm');
-                Route::get('/{anggota_id}', 'PotongGajiController@show')->name('show');
-                Route::get('/{anggota_id}/pdf', 'PotongGajiController@printPdf')->name('pdf');
-            });
-
             
             Route::group(['prefix' => 'cash', 'as' => 'cash.'], function () {
                 Route::get('/', 'CashController@index')->name('index');
@@ -330,5 +323,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
 
         Route::get('/profile', 'StaffController@profile')->name('profile');
         Route::post('/updateProfile', 'StaffController@updateProfile')->name('profile.update');
+        Route::get('/password', 'StaffController@password')->name('password');
+        Route::post('/updatePassword', 'StaffController@passwordUpdate')->name('password.update');
     });
 });
