@@ -35,7 +35,7 @@
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label" for="field-kategori">Category</label>
                             <div class="col-lg-9">
-                                <CategorySelector @done="(category) => form.category_id = category" :error="errors.category_id" :data="form.category_id"/>
+                                <CategorySelector @done="(category) => form.category_id = category" :error="errors.category_id" :value="(data) ?  data.category_id : null"/>
                             </div>
                         </div>
                         
@@ -61,19 +61,19 @@
                         <div class="form-group row" v-if="!form.has_variant">
                             <label class="col-lg-3 col-form-label" for="field-sku">SKU</label>
                             <div class="col-lg-7">
-                                <input type="text" class="form-control" id="field-sku" v-model="form.sku">
+                                <input type="text" class="form-control" id="field-sku" v-model="variant[0].sku">
                             </div>
                         </div>
                         <div class="form-group row" v-if="!form.has_variant">
                             <label class="col-lg-3 col-form-label" for="field-sell_price">Sell Price</label>
                             <div class="col-lg-7">
-                                <CurrencyInput v-model="form.sell_price" class="form-control"/>
+                                <CurrencyInput v-model="variant[0].sell_price" class="form-control"/>
                             </div>
                         </div>
                         <div class="form-group row" v-if="!form.has_variant">
                             <label class="col-lg-3 col-form-label" for="field-purchase_price">Purchase Price</label>
                             <div class="col-lg-7">
-                                <CurrencyInput v-model="form.purchase_price" class="form-control"/>
+                                <CurrencyInput v-model="variant[0].purchase_price" class="form-control"/>
                             </div>
                         </div>
 
@@ -172,8 +172,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(value, index) in variant" :key="index">
-                                    <td 
-                                        :colspan="rowSpan"
+                                    <td :rowspan="variantRowSpan"
                                         v-if="!index ? true : variant[index-1].var1 == variant[index].var1 ? '' : true"
                                         class="text-center"
                                         v-text="value.var1"
@@ -253,9 +252,6 @@ export default {
                 var2_name : null,
                 var2_value : null,
                 images : [],
-                sell_price : null,
-                purchase_price : null,
-                sku : null,
             },
             variant : [{
                 id : null,
@@ -269,6 +265,7 @@ export default {
             var1_value : [],
             var2_value : [],
             variantDeleted : [],
+            imageDeleted : [],
         }
     },
     props: {
@@ -350,6 +347,13 @@ export default {
 
         addVariant(){
             this.form.has_variant = true;
+            if(this.variant.length){
+                this.variant.forEach((e, i) => {
+                    if(e.id){
+                        this.variantDeleted.push(e);
+                    }
+                });
+            }
             this.variant = [];
         },
 
@@ -357,7 +361,7 @@ export default {
             const newVariant = [];
             this.var1_value.forEach((var1, i1) => {
                 if(this.var2_value.length == 0){
-                    var foundIndex = this.variant.findIndex(x => x.var1 == var1 && x.id != null);
+                    var foundIndex = this.variant.findIndex(x => x.var1 == var1);
                     if(foundIndex != -1){
                         this.variant[foundIndex].var1 = var1;
                     }else{
@@ -372,7 +376,7 @@ export default {
                     }
                 }else{
                     this.var2_value.forEach((var2, i2) => {
-                    var foundIndex = this.variant.findIndex(x => x.var1 == var1 && x.id != null);
+                    var foundIndex = this.variant.findIndex(x => x.var1 == var1);
                         if(foundIndex != -1){
                             this.variant[foundIndex].var1 = var1;
                             this.variant[foundIndex].var2 = var2;
@@ -436,6 +440,7 @@ export default {
             this.has_variant2 = false;
             this.var2_value = [];
         },
+
         coba(e){
             console.log(e);
             if(e.length > 0){
@@ -449,29 +454,32 @@ export default {
                 this.form.name = this.data.name;
                 this.form.description = this.data.description;
                 this.form.category_id = this.data.category_id;
-                this.form.has_variant = this.data.has_variant == 1 ? true : false;
-                this.form.var1_name = this.data.var1_name;
                 this.form.show_on_web = this.data.show_web;
-                this.form.var2_name = this.data.var2_name ? this.data.var2_name : null;
-                this.var1_value = this.data.var1_value ? JSON.parse(this.data.var1_value) : [];
-                this.var2_value = this.data.var2_value ? JSON.parse(this.data.var2_value) : [];
-                // if(this.data.variant.length > 1){
-                    this.variant = [];
-                    this.data.variant.forEach((e, i) => {
-                        this.variant.push({
-                            'id' : e.id,
-                            'var1' : e.variant,
-                            'var2' : e.variant2,
-                            'sell_price' : e.sell_price,
-                            'purchase_price' : e.purchase_price,
-                            'sku' : e.sku,
-                        });
+                
+                this.variant = [];
+                this.data.variant.forEach((e, i) => {
+                    this.variant.push({
+                        'id' : e.id,
+                        'var1' : e.variant,
+                        'var2' : e.variant2,
+                        'sell_price' : e.sell_price,
+                        'purchase_price' : e.purchase_price,
+                        'sku' : e.sku,
                     });
-                // }else{
-                //     this.form.sell_price = this.data.variant[0].sell_price;
-                //     this.form.purchase_price = this.data.variant[0].purchase_price;
-                //     this.form.sku = this.data.variant[0].sku;
-                // }
+                });
+
+                if(this.data.variant.length > 1){
+                    this.form.has_variant = true;
+                    this.form.var1_name = this.data.var1_name;
+                    this.form.var2_name = this.data.var2_name ? this.data.var2_name : null;
+                    this.var1_value = this.data.var1_value ? JSON.parse(this.data.var1_value) : [];
+                    this.var2_value = this.data.var2_value ? JSON.parse(this.data.var2_value) : [];
+                }else{
+                    this.form.has_variant = false;
+                    // this.form.sell_price = this.data.variant[0].sell_price;
+                    // this.form.purchase_price = this.data.variant[0].purchase_price;
+                    // this.form.sku = this.data.variant[0].sku;
+                }
                 if(this.data.images.length > 0){
                     this.form.images = [];
                     this.data.images.forEach((value, index) => {

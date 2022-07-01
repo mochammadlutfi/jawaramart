@@ -97,18 +97,21 @@ export default {
             parentSelected : null,
             childSelected : null,
             grandChildSelected : null,
-            category_id : this.data,
+            category_id : this.value,
         }
     },
     props : {
         error : Array,
-        data : Number
+        value : Number
     },
     mounted() {
         // alert(this.category_id);
         // if(this.category_id){
         //     this.findCategoryTree();
         // };
+        if(this.value){
+            this.findCategoryTree();
+        }
         this.getCategory();
     },
     methods: {

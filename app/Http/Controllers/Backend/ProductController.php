@@ -260,20 +260,16 @@ class ProductController extends Controller
                 $product->has_variant = $request->has_variant;
                 $product->save();
 
-                if($request->has_variant == 0){
 
-                    $variant = ProductVariant::firstOrNew(['id' =>  $request->variant[0]['id'], 'product_id' => $product->id]);
+                if(!$request->has_variant){
+
+                    $variant = ProductVariant::where("id", $request->variant[0]['id'])->first();
                     $variant->sell_price = $request->variant[0]['sell_price'];
                     $variant->purchase_price = $request->variant[0]['purchase_price'];
-                    $variant->sku = $request->variant[0]['sku'];
+                    $variant->sku =$request->variant[0]['sku'];
                     $variant->save();
 
                 }else{
-
-                    if($product->variant()->count() == 1){
-                        $product->variant()->delete();
-                    }
-
                     $product->var1_name = $request->var1_name;
                     $product->var1_value = json_encode($request->var1_value);
 
@@ -301,6 +297,7 @@ class ProductController extends Controller
                         ]);
                     }
                 }
+
                 $count = 0;
                 $old_images = [];
                 $new_images = [];
