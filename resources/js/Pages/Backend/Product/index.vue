@@ -20,7 +20,7 @@
                         <div class="col-4">
                             <div class="has-search">
                                 <i class="fa fa-search"></i>
-                                <input type="search" class="form-control" id="search-data-list" v-model="search" @keyup="doSearch()" @change="doSearch()">
+                                <input type="search" class="form-control" id="search-data-list" v-model="search" @input="doSearch" autocomplete="off">
                             </div>
                         </div>
                         <div class="col-4">
@@ -53,17 +53,32 @@
                                 <th width="2%">
                                     <b-form-checkbox id="selectAll" name="selectAll" v-model="selectAll"></b-form-checkbox>
                                 </th>
-                                <th width="45px">Image</th>
-                                <th @click="sort('name')">Name</th>
-                                <th @click="sort('sell_price')" width="15%">Sell Price</th>
-                                <th @click="sort('stock')">Total Stock</th>
-                                <th @click="sort('sale')" width="15%">Total Sale</th>
-                                <th width="10%"></th>
+                                <th @click="sort('name')" width="48%">
+                                    Product
+                                    <span v-if="currentSort == 'name'" v-html="sortIcon" />
+                                </th>
+                                <th @click="sort('sell_price')" width="15%">
+                                    Sell Price
+                                    <span v-if="currentSort == 'sell_price'" v-html="sortIcon" />
+                                </th>
+                                <th @click="sort('purchase_price')" width="16%">
+                                    Purchase Price
+                                    <span v-if="currentSort == 'purchase_price'" v-html="sortIcon" />
+                                </th>
+                                <th @click="sort('stock')" width="10%">
+                                    Stock
+                                    <span v-if="currentSort == 'stock'" v-html="sortIcon" />
+                                </th>
+                                <th @click="sort('sold')" width="12%">
+                                    Sold
+                                    <span v-if="currentSort == 'sold'" v-html="sortIcon" />
+                                </th>
+                                <th width="8%"></th>
                             </tr>
                         </thead>
                         <tbody v-if="loading">
                             <tr>
-                                <td colspan="5">
+                                <td colspan="7">
                                     <div class="text-center py-50">
                                         <div class="spinner-border text-primary wh-50" role="status">
                                             <span class="sr-only">Loading...</span>
@@ -84,16 +99,26 @@
                                             >
                                         </b-form-checkbox>
                                     </td>
-                                    <td> <img class="media-object" :src="data.main_image" style="max-width:45px"></td>
-                                    <td>{{ data.name }}</td>
+                                    <td>
+                                        <div class="d-flex">
+                                            <img class="media-object" :src="data.main_image" style="max-width:45px">
+                                            <div class="pl-3">
+                                                <div class="font-w600">{{ data.name }}</div>
+                                                {{ data.category.name }}
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>
                                         {{ currency(data.sell_price) }} 
                                         <template v-if="data.variant.length > 1 && data.sell_price != data.sell_max_price">
                                         ~ {{ currency(data.sell_max_price) }}
                                         </template>
                                     </td>
-                                    <td>{{ (data.stock_count) ? data.stock_count : 0 }}</td>
-                                    <td>{{ (data.sale_count) }}x</td>
+                                    <td>
+                                        {{ currency(data.purchase_price) }} 
+                                    </td>
+                                    <td>{{ (data.stock) ? data.stock : 0 }}</td>
+                                    <td>{{ (data.sold) }}</td>
                                     <th>
                                         <b-dropdown text="Action" class="m-md-2"  size="sm">
                                             <a :href="route('admin.product.edit', {id : data.id})" class="dropdown-item">
@@ -110,7 +135,12 @@
                             </template>
                             <template v-else>
                                 <tr v-if="!Object.values(dataList.data).length">
-                                    <td>Data Kosong</td>
+                                    <td colspan="7">
+                                        <div class="text-center">
+                                            <img class="img-fluid" :src="asset('images/not_found.png')">
+                                            <h3 class="font-size-24 font-w600 mt-3">Data Not Found</h3>
+                                        </div>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -146,16 +176,7 @@ export default {
             currentPage: this.route().params.page == undefined ? 1 : this.route().params.page,
         } 
     },
-    mounted() {
-        // this.$inertia.on('start', (event) => {
-        //     console.log('asd');
-        // })
-        // this.hasPermission('Product', 'create');
-    },
     watch: {
-        search: function () {
-            this.doSearch() 
-        },
         selectAll: function(val){
 			this.selected = [];
             if(val){
@@ -168,6 +189,15 @@ export default {
     props: {
         dataList: Object,
     },
+    computed: {
+        sortIcon: function() {
+            if (this.currentSortDir === "asc") {
+                return '<i class="fa fa-sort-amount-up-alt"></i>';
+            } else {
+                return '<i class="fa fa-sort-amount-down-alt"></i>';
+            }
+        },
+    },
     methods :{
         sort:function(s) {
 
@@ -175,19 +205,11 @@ export default {
                 this.currentSortDir = this.currentSortDir === 'asc' ? 'desc' :'asc';
             }
 
+            this.loading = true;
             this.currentSort = s;
-
-            let params = {
-                search : this.search,
-                page : 1,
-                sort : this.currentSort,
-                sortDir : this.currentSortDir
-            }
-            
-            this.$inertia.get(this.route('admin.product.index', params), {
-                preserveScroll : true,
-            });
+            this.fetchData();
         },
+
         checkPaginate(type){
             const vm = this;
             if(vm.dataList){
@@ -203,33 +225,15 @@ export default {
         nextPage: function() {
             if(this.currentPage < this.dataList.total){
                 this.currentPage++;
-
-                let params = {
-                    search : this.search,
-                    page : this.currentPage,
-                    sort : this.currentSort,
-                    sortDir : this.currentSortDir
-                }
-                
-                this.$inertia.get(this.route('admin.product.index', params), {
-                    preserveScroll : true,
-                });
+                this.loading = true;
+                this.fetchData(this.currentPage);
             }
         },
         prevPage: function() {
             if(this.currentPage > 1){
+                this.loading = true;
                 this.currentPage--;
-
-                 let params = {
-                    search : this.search,
-                    page : this.currentPage,
-                    sort : this.currentSort,
-                    sortDir : this.currentSortDir
-                }
-                
-                this.$inertia.get(this.route('admin.product.index', params), {
-                    preserveScroll : true,
-                });
+                this.fetchData(this.currentPage);
             }
         },
         format_date(value){
@@ -237,23 +241,30 @@ export default {
                 return moment(String(value)).format('DD MMM YYYY')
             }
         },
-        
-        doSearch : _.throttle(function(){
+        doSearch : _.debounce(function(){
+            this.loading = true;
+            this.fetchData();
+        }, 1000),
 
+        fetchData(page = 1){
             let params = {
                 search : this.search,
-                page : 1,
+                page : page,
                 sort : this.currentSort,
                 sortDir : this.currentSortDir
             }
-            this.$inertia.get(this.route('admin.product.index', params), {
-                preserveScroll : true,
-            })
-        }, 200),
+
+            this.$inertia.get(this.route(this.route().current(), params), {
+                preserveState: true,
+                preserveScroll: true,
+                onFinish: () => {
+                    this.loading = false;
+                },
+            });
+        },
         updateStock(product){
-            
             this.$refs.ProductStockUpdate.openModal(product);
-        }
+        },
     }
 }
 </script>

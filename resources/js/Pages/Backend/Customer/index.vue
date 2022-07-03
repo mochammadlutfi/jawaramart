@@ -10,124 +10,86 @@
                     </button>
                 </div>
             </div>
-            <div class="block block-rounded block-shadow block-bordered d-md-block d-none mb-10">
-                <div class="block-content p-2">
-                    <div class="row justify-content-between">
-                        <div class="col-4">
-                            <div class="has-search">
-                                <i class="fa fa-search"></i>
-                                <input type="search" class="form-control" id="search-data-list" v-model="search" @keyup="doSearch()" @change="doSearch()">
-                            </div>
-                        </div>
-                        <div class="col-4">
-                        </div>
-                        <div class="col-4">
-                            <div class="d-flex float-right">
-                                <div class="my-auto px-3">
-                                    <span>{{ dataList.from }}-{{ dataList.to }}/{{ dataList.total }}</span>
-                                </div>
-                                <div class="pt-25 pl-0">
-                                    <Link :href="dataList.prev_page_url ? dataList.prev_page_url : '#'" as="button" class="btn btn-alt-secondary mx-1" type="button"
-                                    :disabled="dataList.prev_page_url ? false : true">
-                                        <i class="fa fa-chevron-left fa-fw"></i>
-                                    </Link>
-                                    <Link :href="dataList.next_page_url ? dataList.next_page_url : '#'" as="button" class="btn btn-alt-secondary mx-1" type="button"
-                                    :disabled="dataList.next_page_url ? false : true">
-                                        <i class="fa fa-chevron-right fa-fw"></i>
-                                    </Link>
+
+            <base-table :values="dataList" :columns="columns" checkbox>
+                <template #rowCheck>
+                    <b-form-checkbox id="selectAll" name="selectAll" @change="selectAll"></b-form-checkbox>
+                </template>
+                <template #body="data">
+                    <tr v-for="value in data.values" :key="value.id">
+                        <td>
+                            <b-form-checkbox
+                                :id="'data-'+value.id"
+                                v-model="selected"
+                                :name="'data-'+value.id"
+                                :value="value.id"
+                                >
+                            </b-form-checkbox>
+                        </td>
+                        <td>
+                            <div class="d-flex">
+                                <img class="img-avatar  img-avatar32" :src="value.avatar_url" style="max-width:45px">
+                                <div class="pl-3">
+                                    {{ value.name }}
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="block block-rounded block-shadow-2 block-bordered mb-5">
-                <div class="block-content px-0 py-0">
-                    <table class="table table-striped table-vcenter table-hover mb-0">
-                        <thead class="thead-light">
-                            <tr>
-                                <th width="2%">
-                                    <b-form-checkbox id="selectAll" name="selectAll" v-model="selectAll"></b-form-checkbox>
-                                </th>
-                                <th width="45px">Image</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Total Spending</th>
-                                <th width="10%"></th>
-                            </tr>
-                        </thead>
-                        <tbody v-if="loading">
-                            <tr>
-                                <td colspan="5">
-                                    <div class="text-center py-50">
-                                        <div class="spinner-border text-primary wh-50" role="status">
-                                            <span class="sr-only">Loading...</span>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tbody v-else>
-                            <template v-if="Object.values(dataList.data).length">
-                                <tr v-for="data in dataList.data" :key="data.id">
-                                    <td>
-                                        <b-form-checkbox
-                                            :id="'data-'+data.id"
-                                            v-model="selected"
-                                            :name="'data-'+data.id"
-                                            :value="data.id"
-                                            >
-                                        </b-form-checkbox>
-                                    </td> 
-                                    <td> <img class="img-avatar  img-avatar32" :src="data.avatar_url" style="max-width:45px"></td>
-                                    <td>{{ data.name }}</td>
-                                    <td>{{ data.email }}</td>
-                                    <td>{{ currency(parseFloat(data.sale_count)) }}</td>
-                                    <th>
-                                        <a :href="route('admin.customer.show', { id : data.id})" class="btn btn-sm btn-secondary">
-                                            <i class="si si-eye mr-1"></i>Detail
-                                        </a>
-                                    </th>
-                                </tr>
-                            </template>
-                            <template v-else>
-                                <tr v-if="!Object.values(dataList.data).length">
-                                    <td>Data Kosong</td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </td>
+                        <td>
+                            {{ value.email }}
+                        </td>
+                        <td>
+                            {{ value.status }}
+                        </td>
+                        <td>{{ currency(parseFloat(value.sale_count)) }}</td>
+                        <td>
+                            <a :href="route('admin.customer.show', { id : value.id})" class="btn btn-sm btn-secondary">
+                                <i class="si si-eye mr-1"></i>Detail
+                            </a>
+                        </td>
+                    </tr>
+                </template>
+            </base-table>
+
         </div>
     </BaseLayout>
 </template>
 
 <script>
-import { Link } from '@inertiajs/inertia-vue';
 import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import moment from 'moment';
-import _ from 'lodash';
+import BaseTable from '@/components/Table/BaseTable.vue';
+
 export default {
     components: {
         BaseLayout,
-        Link,
+        BaseTable
     },
     data(){
         return {
-            loading : false,
-            selected: [],
-            selectAll: false,
-            search : this.route().params.search == '' ? '' : this.route().params.search
+            columns : [
+                {
+                    name : "Name",
+                    field : "name",
+                    width : "40%",
+                },
+                {
+                    name : 'Email',
+                    field : 'email',
+                    width : "20%",
+                },
+                {
+                    name : "Status",
+                    field : 'status',
+                    width : "15%",
+                },
+                {
+                    name : "Total Spending",
+                    field : 'total_spending',
+                    width : "15%",
+                }
+            ],
+            selected : [],
         } 
-    },
-    mounted() {
-        this.$inertia.on('start', (event) => {
-            console.log(event);
-        })
-        this.$inertia.on('finish', (event) => {
-            this.loading = false
-        })
     },
     watch: {
         search: function () {
@@ -146,25 +108,20 @@ export default {
         dataList: Object,
     },
     methods :{
-        format_date(value){
-            if (value) {
-            return moment(String(value)).format('DD MMM YYYY')
+        selectAll(e){
+            if(e){
+                this.dataList.data.forEach((v, i) => {
+                    this.selected.push(v.id)
+                });
+            }else{ 
+                this.selected = [];
             }
         },
-        doSearch : _.throttle(function(){
-            this.$inertia.get(this.route('admin.product.index', { search : this.search }), {
-                preserveScroll : true,
-            })
-        }, 200),
-        select() {
-			this.selected = [];
-			if (!this.selectAll) {
-                this.dataList.data.forEach((value, index) => {
-                    this.selected.push(value.id)
-                    
-                });
-			}
-		}
+        format_date(value){
+            if (value) {
+                return moment(String(value)).format('DD MMM YYYY')
+            }
+        },
     }
 }
 </script>

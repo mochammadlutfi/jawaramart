@@ -41,10 +41,10 @@ class ProductController extends Controller
 
         $res = Product::select('id', 'name', 'show_web', 'slug', 'category_id', 'brand_id')
         ->withCount([
-            'stock' => function ($query) {
+            'stock as stock' => function ($query) {
                 $query->select(DB::raw("SUM(stock)"));
             },
-            'sale'
+            'sale as sold'
         ])
         ->with([
             'variant', 'category:id,name'
@@ -58,11 +58,21 @@ class ProductController extends Controller
         }else{
             $sorted = $res->sortByDesc($sort);
         }
-
-        $data = (new Collection($sorted->values()))->paginate(10);
+        
+        if($sort_dir == 'asc'){
+            $sorted = $res->sortBy($sort);
+        }else{
+            $sorted = $res->sortByDesc($sort);
+        }
+        
+        $ProductsPaginated = (new Collection($sorted->values()))->paginate(18);
+        $items = $ProductsPaginated->items();
+        
+        $decodeFix = json_decode($ProductsPaginated->toJson());
+        $decodeFix->data = array_values($items);
  
         return Inertia::render('Backend/Product/index', [
-            'dataList' => $data
+            'dataList' => $decodeFix
         ]);
     }
 

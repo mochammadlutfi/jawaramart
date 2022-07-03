@@ -160,7 +160,7 @@
                             </div>
                         </div>
 
-                        <table class="table table-bordered table-vcenter text-center" v-if="form.has_variant">
+                        <table class="table table-bordered table-vcenter text-center table-sm" v-if="form.has_variant">
                             <thead>
                                 <tr>
                                     <th width="18%" v-if="form.var1_name">{{ form.var1_name }}</th>
@@ -172,11 +172,14 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(value, index) in variant" :key="index">
-                                    <td :rowspan="variantRowSpan"
-                                        v-if="!index ? true : variant[index-1].var1 == variant[index].var1 ? '' : true"
-                                        class="text-center"
-                                        v-text="value.var1"
-                                    ></td>
+                                    <template v-if="var2_value.length">
+                                        <td class="text-center" :rowspan="var2_value.length" v-if="merger(variant[index-1], variant[index])">
+                                            {{ value.var1 }}
+                                        </td>
+                                    </template>
+                                    <template v-else>
+                                        <td class="text-center">{{ value.var1 }}</td>
+                                    </template>
                                     <td v-if="form.var2_name && var2_value.length > 0">{{ value.var2 }}</td>
                                     <td>
                                         <CurrencyInput :value="variant[index].sell_price" @change="variant[index].sell_price = $event" class="form-control"/>
@@ -247,9 +250,9 @@ export default {
                 category_id : null,
                 has_variant : false,
                 show_on_web : true,
-                var1_name : null,
+                var1_name : 'Ukuran',
                 var1_value : null,
-                var2_name : null,
+                var2_name : "Warna",
                 var2_value : null,
                 images : [],
             },
@@ -275,11 +278,11 @@ export default {
     },
     computed: {
         variantRowSpan: function(){
-            if(this.var2_value.length > 0){
+            if(this.var2_value.length){
                 return this.var2_value.length;
             }
             return false;
-        }
+        },
     },
     watch: {
         var1_value: function (val, oldVal) {
@@ -288,16 +291,16 @@ export default {
             if(val.length > 0){
                 this.updateVariantRow();
             }
-            const removed = oldVal.filter(v => !val.includes(v));
-            if(removed && removed.length > 0) {
-                // alert(`${removed} was removed from the list`);
-                this.removeVariantRow(1, removed);
-            }
+            // const removed = oldVal.filter(v => !val.includes(v));
+            // if(removed && removed.length > 0) {
+            //     // alert(`${removed} was removed from the list`);
+            //     this.removeVariantRow(1, removed);
+            // }
         },
         var2_value: function (val, oldVal) {
             this.var2_value = val;
             this.form.var2_value = val;
-            if(val.length > 0){
+            if(val.length){
                 this.updateVariantRow();
             }
         },
@@ -344,6 +347,17 @@ export default {
                 }
             });
         },
+        merger(oldVal, newVal){
+            if(oldVal != undefined && this.var2_value.length > 0){
+                if(oldVal.var1 == newVal.var1){
+                    return false;
+                }else{
+                    return true;
+                }
+            }else{
+                return true;
+            }
+        },
 
         addVariant(){
             this.form.has_variant = true;
@@ -358,29 +372,10 @@ export default {
         },
 
         updateVariantRow(){
-            const newVariant = [];
+            let newVariant = [];
             this.var1_value.forEach((var1, i1) => {
-                if(this.var2_value.length == 0){
-                    var foundIndex = this.variant.findIndex(x => x.var1 == var1);
-                    if(foundIndex != -1){
-                        this.variant[foundIndex].var1 = var1;
-                    }else{
-                        newVariant.push({
-                            'id' : null,
-                            'var1' : var1,
-                            'var2' : null,
-                            'sell_price' : null,
-                            'purchase_price' : null,
-                            'sku' : null,
-                        });
-                    }
-                }else{
+                if(this.var2_value.length){
                     this.var2_value.forEach((var2, i2) => {
-                    var foundIndex = this.variant.findIndex(x => x.var1 == var1);
-                        if(foundIndex != -1){
-                            this.variant[foundIndex].var1 = var1;
-                            this.variant[foundIndex].var2 = var2;
-                        }else{
                             newVariant.push({
                                 'id' : null,
                                 'var1' : var1,
@@ -389,11 +384,19 @@ export default {
                                 'purchase_price' : null,
                                 'sku' : null,
                             });
-                        }
+                    });
+                }else{
+                    newVariant.push({
+                        'id' : null,
+                        'var1' : var1,
+                        'var2' : null,
+                        'sell_price' : null,
+                        'purchase_price' : null,
+                        'sku' : null,
                     });
                 }
             });
-            this.variant.push(...newVariant);
+            this.variant = newVariant;
         },
 
         removeVariantRow(type, variant){

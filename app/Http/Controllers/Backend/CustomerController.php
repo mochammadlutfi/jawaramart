@@ -36,7 +36,7 @@ class CustomerController extends Controller
             $query->where('name', 'LIKE', '%' . $search . '%')
             ->orWhere('email', 'LIKE', '%' . $search . '%');
         })
-        ->orderBy('id', 'desc')->paginate(6);
+        ->orderBy('id', 'desc')->paginate(20);
  
         return Inertia::render('Backend/Customer/index', [
             'dataList' => $dataList
