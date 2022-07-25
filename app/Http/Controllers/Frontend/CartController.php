@@ -132,4 +132,42 @@ class CartController extends Controller
         }
     }
 
+    
+    /**
+     * Remove the specified resource from storage.
+     * @param int $id
+     * @return Renderable
+     */
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+        try{
+            $hapus_db = Cart::destroy($id);
+        }catch(\QueryException $e){
+            DB::rollback();
+            return back();
+        }
+        DB::commit();
+        return redirect()->route('cart.index');
+    }
+
+    
+    /**
+     * Remove the specified resource from storage.
+     * @param int $id
+     * @return Renderable
+     */
+    public function destroySelected()
+    {
+        DB::beginTransaction();
+        try{
+            $hapus_db = Cart::whereIn('id', $request->ids)->delete();
+        }catch(\QueryException $e){
+            DB::rollback();
+            return back();
+        }
+        DB::commit();
+        return redirect()->route('cart.index');
+    }
+
 }

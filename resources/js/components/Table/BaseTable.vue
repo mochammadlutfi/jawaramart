@@ -58,7 +58,7 @@
                     </tbody>
                     <tbody v-else>
                         <template v-if="values.data.length">
-                            <slot name="body" :values="values.data" :selectRow="selectRow"></slot>
+                            <slot name="body" :values="values.data"></slot>
                         </template>
                         <template v-else>
                             <tr>
@@ -78,7 +78,7 @@
 </template>
 <script>
 import TableHead from "./TableHead.vue";
-
+import _ from 'lodash';
 export default {
     name : 'base-table',
     components : {
@@ -88,13 +88,15 @@ export default {
         columns : Array,
         values : Object,
         checkbox : Boolean,
+        filter : Object,
+        defaultSort : String,
     },
     data(){
         return {
             loading : false,
             selected: [],
             search : this.route().params.search == undefined ? '' : this.route().params.search,
-            currentSort: this.route().params.sort == undefined ? 'name' : this.route().params.sort,
+            currentSort: this.route().params.sort == undefined ? this.defaultSort : this.route().params.sort,
             currentSortDir: this.route().params.sortDir == undefined ? 'asc' : this.route().params.sortDir,
             currentPage: this.route().params.page == undefined ? 1 : this.route().params.page,
         }

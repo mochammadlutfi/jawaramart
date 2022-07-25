@@ -377,6 +377,7 @@ class SaleOrderController extends Controller
         $pdf = PDF::loadView('report.invoice', compact([
             'data'
         ]));
+        $pdf->setPaper('a4', 'landscape');
         return $pdf->stream();
     }
     

@@ -55,7 +55,8 @@ Route::namespace('Frontend')->group(function(){
         Route::get('/data', 'CartController@data')->name('data');
         Route::post('/store','CartController@store')->name('store');
         Route::post('/update','CartController@update')->name('update');
-        Route::delete('/delete/{id}','CartController@destroy')->name('delete');
+        Route::delete('/delete/{id}','CartController@destroy')->name('remove');
+        Route::post('/removeSelected','CartController@destroySelected')->name('removeSelected');
     });
 
 

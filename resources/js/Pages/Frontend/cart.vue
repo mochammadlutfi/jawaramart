@@ -13,37 +13,52 @@
             </h2>
             <div class="row">
                 <div class="col-lg-8">
-                    <div class="border-bottom border-3x py-15" v-if="!$root.window.mobile">
-                        <b-form-checkbox id="selectAll" name="selectAll" v-model="selectAll">Pilih Semua</b-form-checkbox>
-                    </div>
-                    <div class="row cart-item" v-for="(value, index) in $page.props.cart" :key="index">
-                        <div class="col-3 col-lg d-flex px-0">
-                            <div class="my-auto">
-                                <label class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" :id="value.id" type="checkbox" :value="value" v-model="selected">
-                                    <label class="custom-control-label" :for="value.id"></label>
-                                </label>
-                            </div>
-                            <img :src="value.product.main_image" class="img-fluid">
+                    <div class="cart-header" v-if="!$root.window.mobile">
+                        <div class="wrap-left">
+                            <b-form-checkbox id="selectAll" name="selectAll" v-model="selectAll">Pilih Semua</b-form-checkbox>
                         </div>
-                        <div class="col-9 col-lg-6 product_info">
-                            <div class="product_name">
-                                <a :href="route('product.show', { product: value.product.slug })">
-                                        {{ value.product.name }}
-                                </a>
+                        <div class="wrap-right">
+                            <button class="btn btn-sm btn-danger" type="button" @click="removeSelected" v-if="selected.length">
+                                <i class="si si-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="cart-item" v-for="(value, index) in $page.props.cart" :key="index">
+                        <div class="cart-item-check">
+                            <label class="custom-control custom-checkbox">
+                                <input class="custom-control-input" :id="value.id" type="checkbox" :value="value" v-model="selected">
+                                <label class="custom-control-label" :for="value.id"></label>
+                            </label>
+                        </div>
+                        <div class="cart-item-product">
+                            <div class="cart-product_img">
+                                <img :src="value.product.main_image" class="img-fluid">
                             </div>
-                            <div class="product_price">
-                                    {{ currency(value.unit_price) }}
+                            <div class="cart-product_info">
+                                <div class="product_name">
+                                    <a :href="route('product.show', { product: value.product.slug })">
+                                            {{ value.product.name }}
+                                    </a>
+                                </div>
+                                <div class="product_price">
+                                        {{ currency(value.unit_price) }}
+                                </div>
                             </div>
                         </div>
                         <template v-if="!$root.window.mobile">
-                        <div class="col-2 d-flex my-auto px-2" >
+                        <div class="cart-item-qty" >
                             <product-qty @change="(qty) => updateCart(value.id, qty)" :value="value.qty" :size="'sm'" ></product-qty>
                         </div>
-                        <div class="col d-flex my-auto px-0 col d-flex justify-content-center my-auto px-0">
+                        <div class="cart-item-subtotal">
                             <div class="product_sub_total">
                                 {{ currency(value.unit_price * value.qty) }}
                             </div>
+                        </div>
+                        <div class="cart-item-remove">
+                            <button  class="btn btn-danger btn-sm" @click="remove(value.id)">
+                                <i class="si si-trash"></i>
+                            </button>
                         </div>
                         </template>
                     </div>
@@ -86,7 +101,12 @@
     </BaseLayout>
 </template>
 <style>
-
+.cart-header {
+    border-bottom : 3px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 10px;
+}
 @media only screen and (max-width: 768px) {
     .content.cart-content {
         padding: 52px 12px 12px 12px !important;
@@ -180,37 +200,71 @@
     border-bottom: none !important;
 }
 
-.cart-item img{
-    width: 80px;
-    height: 80px;
-    border-radius: 1rem;
-}
-
-.cart-item .product_info .product_name{
-    font-size: 1.15rem;
-    font-weight: 500;
-}
-
-.cart-item .product_info .product_name a {
-    font-size: 14px;
-    color: rgba(49,53,59,0.96);
-    width: calc(100% - 8px);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.cart-item .product_info .product_price{
-    font-size: 1rem;
-    font-weight: 700;
-}
-
 .cart-item .product_sub_total{
     font-size: 1.1rem;
     font-weight: 700;
 }
 </style>
 
+<style lang="scss">
+.cart-item {
+    display : flex;
+    
+    .cart-item-check {
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+
+    .cart-item-product  {
+        display: flex;
+        width: 60%;
+
+        .cart-product_img img{
+            width: 80px;
+            height: 80px;
+            border-radius: 1rem;
+        }
+
+        .cart-product_info {
+            margin-top: auto;
+            margin-bottom: auto;
+
+            .cart-product_title {
+                font-size: 1.15rem;
+                font-weight: 500;
+                a {
+                    font-size: 14px;
+                    color: rgba(49,53,59,0.96);
+                    width: calc(100% - 8px);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+            .cart-product_price {
+                font-size: 1rem;
+                font-weight: 700;
+            }
+        }
+    }
+    .cart-item-qty {
+        width : 115px;
+        margin-top: auto;
+        margin-bottom: auto;
+        
+    }
+    .cart-item-subtotal {
+        margin-top: auto;
+        margin-bottom: auto;
+        
+    }
+    .cart-item-remove {
+        margin-top: auto;
+        margin-bottom: auto;
+        
+    }
+}
+</style>
 <script>
 import BaseLayout from "@/layouts/frontend/BaseLayout";
 import ProductQty from "@/components/Product/ProductQty.vue";
@@ -273,6 +327,75 @@ export default {
             form.post(this.route('checkout.shipping'), {
                 preserveScroll: true,
             });
+        },
+        removeSelected(){
+            this.$swal.fire({
+                icon: 'warning',
+                title: 'Kamu Yakin?',
+                text: `${ this.selected.length } produk akan dihapus!`,
+                showCancelButton: true,
+                cancelButtonText : 'Tidak, Batal',
+                confirmButtonText: "Ya, Hapus",
+                confirmButtonColor: '#3f9ce8',
+                cancelButtonColor: '#af1310',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.$inertia.post(this.route('cart.removeSelected'), {
+                            ids : this.selected,
+                        }, {
+                        preserveScroll: true,
+                        resetOnSuccess: false,
+                        onProgress: ()=> {
+                            this.$swal.fire({
+                                title: 'Tunggu Sebentar...',
+                                text: '',
+                                imageUrl: window._asset + 'media/loading.gif',
+                                showConfirmButton: false,
+                                allowOutsideClick: false,
+                            });
+                        },
+                        onSuccess: () => {
+                            this.$swal.Close();
+                            return this.$swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: "Produk berhasil dihapus dari keranjang",
+                                showCancelButton: false,
+                                showConfirmButton: false,
+                            });
+                        },
+                        onError:() => {
+                            this.$swal.Close();
+                        }
+                    })
+                }
+            })
+        },
+        remove(id){
+            this.$swal.fire({
+                icon: 'warning',
+                title: 'Kamu Yakin?',
+                text: `Semua produk yang dipilih akan dihapus!`,
+                showCancelButton: true,
+                cancelButtonText: 'Tidak, Batal!',
+                confirmButtonText: 'Ya, Hapus!',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.$inertia.delete(this.route('cart.remove', id), {
+                        preserveScroll: true,
+                        onSuccess: () => {
+                            this.$swal.Close();
+                            return this.$swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: "Produk berhasil dihapus dari keranjang",
+                                showCancelButton: false,
+                                showConfirmButton: false,
+                            });
+                        },
+                    })
+                }
+            })
         }
     }
 

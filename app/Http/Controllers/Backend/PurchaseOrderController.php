@@ -16,6 +16,7 @@ use App\Models\Purchase;
 use App\Models\PurchaseLine;
 use App\Models\Payment;
 use App\Models\ProductStock;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class PurchaseOrderController extends Controller
@@ -160,7 +161,6 @@ class PurchaseOrderController extends Controller
      */
     public function update(Request $request)
     {
-        // dd($request->all());
         $rules = [
             'supplier_id' => 'required',
             'date' => 'required',
@@ -355,6 +355,31 @@ class PurchaseOrderController extends Controller
         return redirect()->route('admin.purchase.order.index');
     }
 
+    
+    /**
+     * Remove the specified resource from storage.
+     * @param int $id
+     * @return Renderable
+     */
+    public function pdf($id)
+    {
+        $data = Purchase::with(['line' => function($q){
+            $q->with(['product:id,name']);
+        }, 'payment' => function($q){
+            $q->with(['payment_method:id,name,image']);
+        }, 'supplier', 'staff'])
+        ->where('id', $id)->first();
+        
+        $pdf = PDF::loadView('report.purchase', compact([
+            'data'
+        ]));
+
+        return $pdf->stream();
+        // return view('report.purchase', compact([
+        //         'data'
+        //     ]));
+    }
+
     private function uploadFiles($file){
         $file_name = uniqid() . '.' . $file->getClientOriginalExtension();
         Storage::disk('public')->putFileAs(
@@ -362,6 +387,7 @@ class PurchaseOrderController extends Controller
             $file,
             $file_name
         );
+        $pdf->setPaper('a4', 'landscape');
         
         return 'uploads/sliders/'.$file_name;
     }

@@ -256,7 +256,7 @@ class PurchaseReturnController extends Controller
             DB::beginTransaction();
             try{
 
-                $data = new PurchaseReturn();
+                $data = PurchaseReturn::where('id', $request->id)->first();
                 $data->ref = GeneralHelp::generate_ref_sale_return();
                 $data->date = Carbon::now();
                 $data->purchase_id = $request->purchase_id;
@@ -299,9 +299,10 @@ class PurchaseReturnController extends Controller
     {
         DB::beginTransaction();
         try{
-            $sale = Sale::where('id', $request->id)->first();
+            $sale = PurchaseReturn::where('id', $request->id)->first();
             $sale->status = $request->status;
             $sale->save();
+            
 
         }catch(\QueryException $e){
             DB::rollback();
@@ -320,6 +321,8 @@ class PurchaseReturnController extends Controller
     {
         //
     }
+
+    
 
     private function uploadFiles($file){
         $file_name = uniqid() . '.' . $file->getClientOriginalExtension();

@@ -192,6 +192,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::post('/update','SupplierController@update')->name('update');
                 Route::delete('/delete/{id}','SupplierController@destroy')->name('delete');
                 Route::get('/data','SupplierController@data')->name('data');
+                Route::get('/pdf/{id}', 'SaleOrderController@pdf')->name('pdf');
             });
 
 
@@ -206,6 +207,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::post('/updateStatus','PurchaseOrderController@updateStatus')->name('update_status');
                 Route::delete('/delete/{id}','PurchaseOrderController@destroy')->name('delete');
                 Route::get('/print/{id}', 'PurchaseOrderController@print')->name('print');
+                Route::get('/pdf/{id}', 'PurchaseOrderController@pdf')->name('pdf');
             });
 
             Route::group(['prefix' => 'return', 'as' => 'return.'], function () {
@@ -220,7 +222,6 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
                 Route::get('/{id}/create', 'PurchaseReturnController@create')->name('create');
                 Route::post('/payment','PurchaseReturnController@payment')->name('payment');
             });
-
 
             
             Route::group(['prefix' => 'payment', 'as' => 'payment.'], function () {

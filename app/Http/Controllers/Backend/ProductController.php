@@ -22,6 +22,7 @@ use Storage;
 use Intervention\Image\Facades\Image;
 
 use App\Helpers\Collection;
+
 class ProductController extends Controller
 {
     public function __construct()
@@ -360,6 +361,7 @@ class ProductController extends Controller
     public function destroy($id)
     {
         $product = Product::where('id', $id)->first();
+        
 
     }
 
@@ -517,7 +519,6 @@ class ProductController extends Controller
 
         }
     }
-
     
     /**
      * Store a newly created resource in storage.

@@ -95,8 +95,8 @@ class CheckoutController extends Controller
 
             foreach($checkout['products'] as $i){
                 $line = new SaleLine();
-                $line->product_id = $i['id'];
-                $line->variant_id = $i['variant_id'];
+                $line->product_id = $i['variant_id'];
+                $line->variant_id = $i['id'];
                 $line->unit_price = $i['unit_price'];
                 $line->net_price = $i['unit_price'];
                 $line->qty = $i['qty'];
