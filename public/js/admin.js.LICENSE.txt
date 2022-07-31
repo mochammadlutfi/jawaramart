@@ -76,6 +76,12 @@ and limitations under the License.
  * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
  */
 
+/**
+ * Vue Currency Input 2.4.0
+ * (c) 2018-2022 Matthias Stiller
+ * @license MIT
+ */
+
 //! moment.js
 
 //! moment.js locale configuration

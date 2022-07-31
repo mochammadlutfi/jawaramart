@@ -8,8 +8,8 @@
         <div class="content content-full product_detail">
             <div class="row">
                 <div class="col-lg-6">
-                    <div class="product-img-detail">
-                        <div class="product-img-nav">
+                    <div class="mr-0 mr-lg-3 product-img-detail">
+                        <div class="product-img-nav" v-if="!$root.window.mobile">
                             <flicking ref="flicking1" :options="{ bound: true, bounce: 30, moveType: 'freeScroll', align : 'prev' }" :class="{ 'd-none' : $root.window.mobile }">
                                 <template v-if="data.images.length">
                                     <div class="flicking-panel thumb has-background-primary" v-for="(thumb, iThumb) in data.images" :key="iThumb">
@@ -61,30 +61,32 @@
                             </div>
                         </div>
                     </div>
-                    <div class="product-variant" v-if="data.var1_value">
-                        <div class="product-variant_selected">
-                            <span class="label">{{ data.var1_name }} : </span>
-                            <span>{{ var1 }}</span>
+                    <template v-if="data.variant.length > 1">
+                        <div class="product-variant" v-if="data.var1_value">
+                            <div class="product-variant_selected">
+                                <span class="label">{{ data.var1_name }} : </span>
+                                <span>{{ var1 }}</span>
+                            </div>
+                            <div class="product-variant_list">
+                                <label :for="'var-'+index" class="radio-chip b-outline b-secondary" v-for="(value, index) in JSON.parse(data.var1_value)" :key="index">
+                                    <input type="radio" :id="'var-'+index" name="var1"  v-model="var1" :value="value" :checked="{ 'checked': index === 0 }">
+                                    <span>{{ value }}</span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="product-variant_list">
-                            <label :for="'var-'+index" class="radio-chip b-outline b-secondary" v-for="(value, index) in JSON.parse(data.var1_value)" :key="index">
-                                <input type="radio" :id="'var-'+index" name="var1"  v-model="var1" :value="value" :checked="{ 'checked': index === 0 }">
-                                <span>{{ value }}</span>
-                            </label>
+                        <div class="product-variant" v-if="data.var2_value">
+                            <div class="product-variant_selected">
+                                <span class="label">{{ data.var2_name }} : </span>
+                                <span>{{ var2 }}</span>
+                            </div>
+                            <div class="product-variant_list">
+                                <label :for="'var2-'+index" class="radio-chip b-outline b-secondary" v-for="(value, index) in JSON.parse(data.var2_value)" :key="index">
+                                    <input type="radio" :id="'var2-'+index" name="var2"  v-model="var2" :value="value" :checked="{ 'checked': index === 0 }">
+                                    <span>{{ value }}</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="product-variant" v-if="data.var2_value">
-                        <div class="product-variant_selected">
-                            <span class="label">{{ data.var2_name }} : </span>
-                            <span>{{ var2 }}</span>
-                        </div>
-                        <div class="product-variant_list">
-                            <label :for="'var2-'+index" class="radio-chip b-outline b-secondary" v-for="(value, index) in JSON.parse(data.var2_value)" :key="index">
-                                <input type="radio" :id="'var2-'+index" name="var2"  v-model="var2" :value="value" :checked="{ 'checked': index === 0 }">
-                                <span>{{ value }}</span>
-                            </label>
-                        </div>
-                    </div>
+                    </template>
                     <template v-if="!$root.window.mobile">
                         <div class="py-20">
                             <product-qty @change="(qty) => product.qty = qty"></product-qty>
@@ -125,7 +127,7 @@
         
         <div class="content content-full">
             <div class="block block-transparent">
-                <ul class="nav nav-tabs nav-tabs-alt">
+                <ul class="nav nav-tabs nav-tabs-alt" v-if="!$root.window.mobile">
                     <li class="nav-item">
                         <a class="nav-link active" href="#product-description">Deskripsi
                         </a>
@@ -145,14 +147,20 @@
         </div>
 
         <div class="product-action" v-if="$root.window.mobile">
-            <div class="product-action-wrap">
+            <!-- <div class="product-action-wrap">
                 <div>
+                </div>
+            </div> -->
+            <div class="row">
+                <div class="col-5">
                     <product-qty @change="(qty) => product.qty = qty"></product-qty>
                 </div>
-                <button @click="addCart" type="button" class="btn btn-primary btn-lg btn-noborder">
-                    <i class="fi-rs-shopping-cart"></i>
-                    Masukan Keranjang
-                </button>
+                <div class="col-7">
+                    <button @click="addCart" type="button" class="btn btn-primary btn-lg btn-noborder">
+                        <i class="fi-rs-shopping-cart"></i>
+                        Masukan Keranjang
+                    </button>
+                </div>
             </div>
         </div>
     </BaseLayout>

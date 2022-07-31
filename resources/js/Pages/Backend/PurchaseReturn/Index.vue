@@ -4,97 +4,41 @@
             <div class="content-heading pt-0 mb-3">
                 List Purchase Return ({{ dataList.total }})
             </div>
-            
-            <div class="block block-rounded block-shadow block-bordered d-md-block d-none mb-10">
-                <div class="block-content p-2">
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <div class="has-search">
-                                <i class="fa fa-search"></i>
-                                <input type="search" class="form-control" id="search-data-list" v-model="search" @keyup="doSearch()" @change="doSearch()" autofocus>
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <v-select v-model="sorted" :options="sorting" placeholder="Urut Berdasarkan"></v-select>
-                        </div>
-                        <div class="col-lg align-self-end">
-                            <div class="d-flex float-right">
-                                <div class="my-auto px-3">
-                                    <span>{{ dataList.from }}-{{ dataList.to }}/{{ dataList.total }}</span>
-                                </div>
-                                <div class="pt-25 pl-0">
-                                    <button @click="prevPage" class="btn btn-alt-secondary mx-1" type="button"
-                                    :disabled="checkPaginate('prev')">
-                                        <i class="fa fa-chevron-left fa-fw"></i>
-                                    </button>
-                                    <button @click="nextPage" class="btn btn-alt-secondary mx-1" type="button"
-                                    :disabled="checkPaginate('next')">
-                                        <i class="fa fa-chevron-right fa-fw"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="block block-rounded block-shadow-2 block-bordered mb-5">
-                <div class="block-content px-0 py-0">
-                    <table class="table table-striped table-vcenter table-hover mb-0">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Date</th>
-                                <th>Return No</th>
-                                <th>Invoice</th>
-                                <th>Customer</th>
-                                <th>Payment Status</th>
-                                <th>Total Amount</th>
-                                <th>Total Items</th>
-                                <th width="10%"></th>
-                            </tr>
-                        </thead>
-                        <tbody v-if="loading">
-                            <tr>
-                                <td colspan="5">
-                                    <div class="text-center py-50">
-                                        <div class="spinner-border text-primary wh-50" role="status">
-                                            <span class="sr-only">Loading...</span>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tbody v-else>
-                            <template v-if="Object.values(dataList.data).length">
-                                <tr v-for="data in dataList.data" :key="data.id">
-                                    <td>{{ data.date }}</td> 
-                                    <td>{{ data.ref }}</td>
-                                    <td>{{ data.purchase.ref }}</td>
-                                    <td>{{ data.purchase.supplier.name }}</td>
-                                    <td>
-                                        <span class="badge badge-success" v-if="data.payment_status == 'paid'">Paid</span>
-                                        <span class="badge badge-info" v-else-if="data.payment_status == 'partial'">Partial</span>
-                                        <span class="badge badge-warning" v-else-if="data.payment_status == 'pending'">Pending</span>
-                                        <span class="badge badge-danger" v-else>Unpaid</span>
-                                    </td>
-                                    <td>{{ currency(data.grand_total) }}</td>
-                                    <td>{{ data.line_count }}</td>
-                                    <th>
-                                        <a :href="route('admin.purchase.return.show', {id : data.id})" class="btn btn-secondary btn-sm">
-                                            <i class="si si-eye mr-1"></i>
-                                            Detail
-                                        </a>
-                                    </th>
-                                </tr>
-                            </template>
-                            <template v-else>
-                                <tr v-if="!Object.values(dataList.data).length">
-                                    <td>Data Kosong</td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+
+            <base-table :values="dataList" :columns="columns" defaultSort="date" class="table-sm">
+                <template #body="data">
+                    <tr v-for="value in data.values" :key="value.id">
+                        <td>{{ format_date(value.date) }}</td> 
+                        <td>{{ value.ref }}</td>
+                        <td>{{ value.purchase.ref }}</td>
+                        <td>{{ value.supplier.name }}</td>
+                        <td>
+                            <span class="badge badge-secondary" v-if="value.status == 'draft'">Draft</span>
+                            <span class="badge badge-warning" v-else-if="value.status == 'pending'">Pending</span>
+                            <span class="badge badge-info" v-else-if="value.status == 'ordered'">Ordered</span>
+                            <span class="badge badge-success" v-else-if="value.status == 'done'">Done</span>
+                            <span class="badge badge-danger" v-else>Cancel</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-success" v-if="data.payment_status == 'paid'">Paid</span>
+                            <span class="badge badge-info" v-else-if="data.payment_status == 'partial'">Partial</span>
+                            <span class="badge badge-warning" v-else-if="data.payment_status == 'pending'">Pending</span>
+                            <span class="badge badge-danger" v-else>Unpaid</span>
+                        </td>
+                        <td>{{ currency(value.grand_total) }}</td>
+                        <td>
+                            <b-dropdown text="Action" right class="m-md-2" size="sm">
+                                <Link :href="route('admin.purchase.order.show', {id : value.id})" as="button" class="dropdown-item" type="button">
+                                    <i class="si si-eye mr-1"></i> Detail
+                                </Link>
+                                <Link :href="route('admin.purchase.order.edit', {id : value.id})" as="button" class="dropdown-item" type="button">
+                                    <i class="si si-note mr-1"></i>Edit
+                                </Link>
+                            </b-dropdown>
+                        </td>
+                    </tr>
+                </template>
+            </base-table>
         </div>
     </BaseLayout>
 </template>
@@ -105,25 +49,26 @@ import moment from 'moment';
 import _ from 'lodash';
 import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import vSelect from 'vue-select';
-import CustomerSelect  from '@/components/Form/CustomerSelect.vue';
+import BaseTable from '@/components/Table/BaseTable.vue';
 export default {
     components: {
         BaseLayout,
         Link,
         vSelect,
-        CustomerSelect,
+        BaseTable,
     },
     data(){
         return {
             loading : false,
             selected: [],
             selectAll: false,
-            search : this.route().params.search == undefined ? '' : this.route().params.search,
-            currentPage: this.route().params.page == undefined ? 1 : this.route().params.page,
-            sorted : this.route().params.sorted == undefined ? null : this.route().params.sorted,
-            sorting : [
-                { label : 'Terbaru', value : 'latest'},
-                { label : 'Terlama', value : 'oldest'},
+            columns : [
+                { name : 'Date', field : 'date', width : "15%"},
+                { name : 'Return No', field : 'ref', width : "15%"},
+                { name : 'Source No', field : 'po_ref', width : "15%"},
+                { name : 'Supplier', field : 'supplier_name', width : "15%"},
+                { name : 'Payment Status', field : 'payment_status', width : "15%"},
+                { name : 'Total', field : 'grand_total', width : "15%"}
             ],
         } 
     },
@@ -135,69 +80,7 @@ export default {
         
     },
     methods :{
-        checkPaginate(type){
-            const vm = this;
-            if(vm.dataList){
-                if(type == 'next'){
-                    return (vm.dataList.next_page_url) ? false : true;
-                }else{
-                    return (vm.dataList.prev_page_url) ? false : true;
-                }
-            }else{
-                return true;
-            }
-        },
-        nextPage: function() {
-            if(this.currentPage < this.dataList.total){
-                this.currentPage++;
-
-                let params = {
-                    search : this.search,
-                    page : this.currentPage,
-                }
-                
-                this.$inertia.get(this.route('admin.sale.pos.index', params), {
-                    preserveScroll : true,
-                });
-            }
-        },
-        prevPage: function() {
-            if(this.currentPage > 1){
-                this.currentPage--;
-
-                let params = {
-                    search : this.search,
-                    page : this.currentPage,
-                }
-                
-                this.$inertia.get(this.route('admin.sale.pos.index', params), {
-                    preserveScroll : true,
-                });
-            }
-        },
-        format_date(value) {
-            if (value) {
-                moment.locale('id');
-                return moment(String(value)).format('DD MMM YYYY')
-            }
-        },
-        doSearch: _.throttle(function () {
-            this.$inertia.get(this.route('admin.sale.pos.index', {
-                search: this.search,
-                page : 1,
-            }), {
-                preserveScroll: true,
-            })
-        }, 1000),
-        select() {
-			this.selected = [];
-			if (!this.selectAll) {
-                this.dataList.data.forEach((value, index) => {
-                    this.selected.push(value.id)
-                    
-                });
-			}
-		}
+        
     }
 }
 </script>

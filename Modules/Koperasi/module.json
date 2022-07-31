@@ -1,0 +1,13 @@
+{
+    "name": "Koperasi",
+    "alias": "koperasi",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Koperasi\\Providers\\KoperasiServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

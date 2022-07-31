@@ -24,7 +24,7 @@
                 <div class="title-header" v-if="title && $root.window.mobile">
                     <h4>{{ title }}</h4>
                 </div>
-                <SearchBox/>
+                <SearchBox v-else/>
             </div>
 
             <!-- Right Section -->

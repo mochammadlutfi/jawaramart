@@ -55,6 +55,11 @@
             padding: 10px;
         }
 
+        .invoice table thead th, .invoice table tbody td {
+            border-top: 1px solid #31353B;
+            border-bottom: 1px solid #31353B;
+        }
+
         .invoice table tbody td {
             border-bottom: 1px solid #e5e7e9;
         }

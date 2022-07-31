@@ -299,9 +299,15 @@ class PurchaseReturnController extends Controller
     {
         DB::beginTransaction();
         try{
-            $sale = PurchaseReturn::where('id', $request->id)->first();
-            $sale->status = $request->status;
-            $sale->save();
+            $return = PurchaseReturn::where('id', $request->id)->first();
+            $return->status = $request->status;
+            $return->save();
+
+            if($request->status == 'done'){
+                foreach($return->line as $l){
+                    
+                }
+            }
             
 
         }catch(\QueryException $e){

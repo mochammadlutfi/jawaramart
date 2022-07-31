@@ -105,7 +105,8 @@ new Vue({
                 let parts = name.split('::')
                 if(parts.length > 1){
                     let nameVue = parts[1].split('.')[0]
-                    return require(`../../Modules/${ parts[0] }/Resources/Pages/${ nameVue }.vue`).default
+                    // return require(`../../Modules/${ parts[0] }/Resources/Pages/${ nameVue }.vue`).default
+                    return require(`../../Modules/${ parts[0] }/Resources/pages/${ nameVue }.vue`).default
                 }else{
                     return require(`./Pages/${name}`).default
                 }

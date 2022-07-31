@@ -1,0 +1,23 @@
+{
+    "name": "pintasku/koperasi",
+    "description": "",
+    "authors": [
+        {
+            "name": "Mochammad Lutfi Abdul Hakim",
+            "email": "mochammalutfi125@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Koperasi\\": ""
+        }
+    }
+}

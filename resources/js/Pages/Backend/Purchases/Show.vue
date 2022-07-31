@@ -29,7 +29,7 @@
                             <i class="si si-trash mr-3"></i>
                             <span class="font-w600">Delete</span>
                         </b-dropdown-item>
-                        <a class="dropdown-item" :href="route('admin.purchase.order.pdf', { id : data.id})">
+                        <a class="dropdown-item" :href="route('admin.purchase.order.pdf', { id : data.id})" target="_blank">
                             <i class="si si-printer mr-3"></i>
                             <span class="font-w600">Print PDF</span>
                         </a>

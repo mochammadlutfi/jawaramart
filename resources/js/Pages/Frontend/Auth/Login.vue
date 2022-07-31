@@ -22,6 +22,9 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <PasswordInput v-model="form.password" :error="errors.password" id="field-password"/>
+                            <div v-if="errors.password" class="text-danger text-sm">
+                                {{ errors.password[0] }}
+                            </div>
                         </div>
                         <div class="form-group row mb-2">
                             <div class="col-sm-6 d-sm-flex align-items-center">
@@ -77,10 +80,10 @@ export default {
         submit() {
             this.loading = true;
             this.form.post(this.route('login'), {
-                onSuccess :() => {
+                onFinish: () => {
+                    this.form.reset('password');
                     this.loading = false;
                 },
-                onFinish: () => this.form.reset('password'),
             })
         }
     }

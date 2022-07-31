@@ -245,6 +245,42 @@ class MenuHelp
         $menu = $menu->put('sub', $sub_menu);
         $menuData->push($menu->all());
 
+        
+        $menu = Collect([
+            "name" => 'Koperasi',
+            "icon" => 'fa fa-university',
+            "subActivePaths" => 'admin.kop.*',
+        ]);
+        
+
+        // $sub_menu = [];
+
+        
+        $sub_menu = [
+            [
+                "name" => 'Simpanan',
+                "subActivePaths" => 'admin.kop.simpanan.*',
+                "sub" => [
+                  [
+                      "name" => 'Payment Method',
+                      "to" => 'admin.kop.simpanan.wajib.index',
+                  ],
+                  [
+                      "name" => 'Bank',
+                      "to" => 'admin.kop.simpanan.sukarela.index',
+                  ],
+                ]
+            ],
+        ];
+
+        $sub_menu[] = [
+            "name" => 'Anggota',
+            "to" => 'admin.kop.anggota.index',
+        ];
+
+        $menu = $menu->put('sub', $sub_menu);
+        $menuData->push($menu->all());
+
         $settingsMenu = ['Base', 'Staff', 'Roles', 'Warehouse', 'Tax'];
         if (count(array_intersect_key(array_flip($settingsMenu), $permission)) > 0){
             $menu = Collect([
@@ -294,14 +330,11 @@ class MenuHelp
             $menuData->push($menu->all());
         }
 
-        
-
-
         return $menuData->all();
     }
 
-    public static function permission(){
-        
+    public static function permission()
+    {
         $data = auth()->guard('admin')->user()->getAllPermissions()->toArray();
         $permission = array();
         foreach ($data as $element) {

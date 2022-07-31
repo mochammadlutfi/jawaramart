@@ -1,5 +1,5 @@
 <template>
-    <UserLayout title="Menunggu Pembayaran">
+    <UserLayout title="Wishlist">
         <div>
             <div class="content-heading pt-3 mb-3">
                 <i class="fi-rs-home-location mr-1"></i> Wishlist

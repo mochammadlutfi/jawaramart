@@ -79,6 +79,7 @@ Route::namespace('Frontend')->group(function(){
 
         Route::name('address.')->prefix('address')->group(function () {
             Route::get('/','UserAddressController@index')->name('index');
+            Route::get('/create','UserAddressController@create')->name('create');
             Route::post('/store', 'UserAddressController@store')->name('store');
             Route::get('/edit/{id}', 'UserAddressController@edit')->name('edit');
             Route::post('/update', 'UserAddressController@update')->name('update');

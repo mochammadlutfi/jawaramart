@@ -35,9 +35,24 @@ class UserAddressController extends Controller
 
         $data = UserAddress::where('user_id', $user_id)->orderBy('is_primary', 'DESC')->get();
 
-        return Inertia::render('Frontend/User/Address',[
+        return Inertia::render('Frontend/User/Address/Index',[
             'dataList' => $data,
         ]);
+    }
+
+    
+    /**
+     * Show the application dashboard.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function create(Request $request)
+    {
+        $user_id = auth()->guard('web')->user()->id;
+
+        $data = UserAddress::where('user_id', $user_id)->orderBy('is_primary', 'DESC')->get();
+
+        return Inertia::render('Frontend/User/Address/Form');
     }
 
     

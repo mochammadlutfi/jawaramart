@@ -111,7 +111,6 @@
 
     a {
       padding: 6px 8px 6px 0;
-      font-weight: 400;
       color: lighten($body-color, 25%);
 
       @include hover-focus {

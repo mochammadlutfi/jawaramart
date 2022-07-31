@@ -42,8 +42,7 @@ class PurchaseOrderController extends Controller
         }, 'staff', 'supplier'])
         ->withCount(['line'])
         ->when($request->search, function($query, $search){
-            $query->where('name', 'LIKE', '%' . $search . '%')
-            ->orWhere('email', 'LIKE', '%' . $search . '%');
+            $query->where('ref', 'LIKE', '%' . $search . '%');
         })
         ->orderBy('id', 'desc')->paginate(10);
 

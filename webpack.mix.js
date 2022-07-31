@@ -12,6 +12,7 @@ const path = require('path');
  | file for the application as well as bundling up all the JS files.
  |
  */
+/* Allow multiple Laravel Mix applications*/
 
 mix.js('resources/js/app.js', 'public/js')
     .js('resources/js/admin.js', 'public/js')
@@ -38,7 +39,6 @@ mix.js('resources/js/app.js', 'public/js')
                 // "timers": require.resolve("timers-browserify"),
                 // "constants": require.resolve("constants-browserify"),
                 // "crypto": false,
-                // fs: require.resolve('browserify-fs'),
             },
             alias: {
                 vue$: 'vue/dist/vue.runtime.js',

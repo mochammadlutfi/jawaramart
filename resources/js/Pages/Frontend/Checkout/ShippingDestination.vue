@@ -23,6 +23,7 @@
                 <div class="content__district">{{ selected.area_text }}</div>
             </div>
         </div>
+
         <div class="block block-bordered block-rounded block-shadow"  v-else>
             <div class="block-content text-center block-content-full">
                 <h3 class="font-weight-bold h4">Alamat Pengiriman Belum Ditambahkan</h3>
@@ -175,6 +176,138 @@
                 </form>
             </div>
         </b-modal>
+
+        <div class="bottomsheet bottomsheet_show" v-if="modalShow">
+            <div class="bottomsheet-header">
+                <button class="bottomsheet-header_close" type="button" aria-label="Tutup tampilan ini" @click="modalShow = false">
+                    <i class="fa fa-fw fa-times"></i>
+                </button>
+                <div class="bottomsheet-header_title">
+                    Pilih Alamat Lain
+                </div>
+            </div>
+            <div class="bottomsheet-content">
+                <div class="block block-rounded block-bordered mb-15" v-for="d in dataList" :key="d.id">
+                    <div class="block-content">
+                        <label class="css-control css-control-primary css-radio payment-wrap d-flex">
+                            <div class="d-flex my-auto">
+                                <input type="radio" class="css-control-input" name="addressSelected" :value="d" v-model="selected">
+                                <span class="css-control-indicator"></span>
+                            </div>
+                            <div class="px-10">
+                                <div class="font-size-md">
+                                    <span class="font-w700">{{ d.reciever }} </span>({{ d.name }})
+                                </div>
+                                <div>
+                                    {{ d.phone }}
+                                </div>
+                                <div class="content__complete-address">
+                                    {{ d.address }}
+                                </div>
+                                <div class="content__district">{{ d.area_text }}</div>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="block-content block-content-full block-content-sm font-size-sm pl-50">
+                        <a href="#" @click.prevent="edit(d)" class="font-w700">
+                            Ubah Alamat
+                        </a>
+                        <a href="#" @click.prevent="setPrimary(d.id)" class="font-w700 ml-20" v-if="d.is_primary != 1">
+                            Jadikan Alamat Utama
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottomsheet bottomsheet_show" v-if="modalForm">
+            <div class="bottomsheet-header">
+                <button class="bottomsheet-header_close" type="button" aria-label="Tutup tampilan ini" @click="modalForm = false">
+                    <i class="fa fa-fw fa-times"></i>
+                </button>
+                <div class="bottomsheet-header_title">
+                    {{ title }}
+                </div>
+            </div>
+            <div class="bottomsheet-content">
+                <form @submit.prevent="submit">
+                    <div class="form-group">
+                        <label for="field-name">Label Alamat</label>
+                        <input type="text" :class="{'form-control':true, 'is-invalid' : errors.name}"
+                            id="field-name" v-model="form.name" placeholder="Rumah, Kantor, dll">
+                        <div v-if="errors.name" class="invalid-feedback font-size-sm">{{ errors.name[0] }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label for="field-reciever">Nama Penerima</label>
+                                <input type="text" v-bind:class="{'form-control':true, 'is-invalid' : errors.reciever}"
+                                    id="field-reciever" v-model="form.reciever">
+                                <div v-if="errors.reciever" class="invalid-feedback font-size-sm">{{ errors.reciever[0] }}</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label for="field-phone">No Handphone</label>
+                                <input type="text" v-bind:class="{'form-control':true, 'is-invalid' : errors.phone}"
+                                    id="field-phone" v-model="form.phone">
+                                <div v-if="errors.phone" class="invalid-feedback font-size-sm">{{ errors.phone[0] }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="form-group">
+                                <label for="field-name">Kelurahan / Kecamatan</label>
+                                <v-select :filterable="false"
+                                :options="locations"
+                                v-model="locationSelected"
+                                v-bind:class="{'is-invalid' : errors.area_id }" 
+                                @search="onSearch">
+                                <template slot="no-options">
+                                    <div class="p-5 text-left">
+                                        Masukan nama kecamatan atau kelurahan
+                                    </div>
+                                </template>
+                                    <template slot="option" slot-scope="option">
+                                        <div class="d-center">
+                                            {{ option.area_text}}
+                                            </div>
+                                        </template>
+                                        <template slot="selected-option" slot-scope="option">
+                                        <div class="selected d-center">
+                                            {{ option.area_text}}
+                                        </div>
+                                    </template>
+                                </v-select>
+                                <div v-if="errors.area_id" class="text-danger font-size-sm">{{ errors.area_id[0] }}</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label for="field-postal_code">Kode POS</label>
+                                <input type="text" v-bind:class="{'form-control':true, 'is-invalid' : errors.postal_code}"
+                                    id="field-postal_code" v-model="form.postal_code" :disabled="!locationSelected">
+                                <div v-if="errors.postal_code" class="invalid-feedback font-size-sm">{{ errors.postal_code[0] }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="field-name">Alamat Lengkap</label>
+                        <input type="text" v-bind:class="{'form-control':true, 'is-invalid' : errors.address}"
+                            id="field-name" v-model="form.address">
+                        <div v-if="errors.address" class="invalid-feedback font-size-sm">{{ errors.address[0] }}</div>
+                    </div>
+
+                    
+                    <div class="floating-container">
+                        <button type="submit" class="btn btn-lg btn-primary btn-noborder btn-block">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </template>
 <script>
@@ -187,6 +320,7 @@ export default {
         vSelect
     },
     props : ['value'],
+
     data(){
         return {
             title : 'Tambah Alamat Baru',
@@ -207,12 +341,15 @@ export default {
             errors : {},
             terms : null,
             modalShow: false,
+            modalForm: false,
             editMode: false,
             selected : this.value,
             locations : [],
             locationSelected : null,
+        
         }
     },
+
     watch :{
         locationSelected(val){
             if(val){
@@ -232,13 +369,15 @@ export default {
         selected(val){
             this.$emit('done', val);
             this.$bvModal.hide('addressList');
+            this.modalShow = false;
         }
     },
+
     methods :{
         openModal(){
             this.fetchData();
             if(this.$root.window.mobile){
-                
+                this.modalShow = true;
             }else{
                 this.$bvModal.show('addressList');
             }
@@ -260,7 +399,7 @@ export default {
         },
         create(){
             if(this.$root.window.mobile){
-                
+                this.modalForm = true;
             }else{
                 this.$bvModal.show('modalCreateAddress');
             }
@@ -285,6 +424,10 @@ export default {
             this.form.area_text = null;
             this.form.lat = null;
             this.form.lng = null;
+            
+
+            this.modalForm = false;
+            this.modalShow = false;
 
             this.errors = {};
             this.locationSelected = {};
@@ -308,7 +451,7 @@ export default {
                     this.$swal.close();
                 }else{
                     this.$swal.close();
-                    this.$bvModal.hide('modalCreateAddress');
+                    this.reset();
                     this.selected = res.data.data;
                     this.$emit('done', res.data.data);
                     this.$swal.fire({
@@ -381,7 +524,7 @@ export default {
             
             this.$bvModal.hide('addressList');
             if(this.$root.window.mobile){
-                
+                this.modalForm = true;
             }else{
                 this.$bvModal.show('modalCreateAddress');
             }
@@ -389,3 +532,72 @@ export default {
     }
 }
 </script>
+
+<style lang="scss">
+    .bottomsheet {
+        position: fixed;
+        left: 0px;
+        bottom: 0px;
+        width: 100%;
+        min-height: 35%;
+        max-height: 100%;
+        height: 100%;
+        background-color: var(--color-page-background,#FFFFFF);
+        box-shadow: 0 -1px 7px 0 var(--color-shadow,rgba(49,53,59,0.12));
+        z-index: 1034;
+        transform: translateY(0px);
+        transition: transform 400ms cubic-bezier(0.63, 0.01, 0.29, 1) 0s;
+
+        .bottomsheet-header{
+            display: flex;
+            -webkit-box-align: center;
+            align-items: center;
+            -webkit-box-pack: justify;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--N75,#E5E7E9);
+            width: 100%;
+            height: 52px;
+            overflow: hidden;
+
+            .bottomsheet-header_close {
+                // display: inline-block;
+                // padding: 6px 5px;
+                background: none;
+                border: none;
+                cursor: pointer;
+                flex: 0 0 auto;
+                height: 52px;
+                width: 52px;
+                border: none;
+                appearance: none;
+            }
+            .bottomsheet-header_title {
+                flex: 1 1 auto;
+                display: block;
+                position: relative;
+                font-weight: 800;
+                font-size: 16px;
+                line-height: 22px;
+                color: rgba(49, 53, 59, 0.96);
+                letter-spacing: -0.1px;
+                text-decoration: initial;
+                margin: 0px;
+            }
+        }
+
+        .bottomsheet-content {
+            padding: 10px;
+        }
+    }
+
+    .floating-container {
+        position: fixed;
+        bottom: 0px;
+        left: 0px;
+        width: 100%;
+        padding: 8px 16px;
+        box-shadow: 0 -1px 7px 0 var(--color-shadow,rgba(49,53,59,0.12));
+        background-color: var(--N0,rgba(255,255,255,0.96));
+        z-index: 1035;
+    }
+</style>

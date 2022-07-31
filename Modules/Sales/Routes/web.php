@@ -1,5 +1,6 @@
 <?php
 
+use Inertia\Inertia;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -12,5 +13,7 @@
 */
 
 Route::prefix('sales')->group(function() {
-    Route::get('/', 'SalesController@index');
+    Route::get('/', function () {
+        return Inertia::render('Sales::Index');
+    });
 });

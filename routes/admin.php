@@ -248,6 +248,7 @@ Route::prefix('/admin')->name('admin.')->namespace('Backend')->group(function(){
             });
         });
 
+
         Route::prefix('/accounting')->name('accounting.')->namespace('Accounting')->group(function() {
 
             Route::group(['prefix' => 'payment', 'as' => 'payment.'], function () {
