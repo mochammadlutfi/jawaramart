@@ -39,10 +39,28 @@ class SaleOrderController extends Controller
     public function index(Request $request)
     {
 
-        $query = Sale::with('customer:id,name,avatar')->withCount(['line'])
-        ->where('is_pos', 0)->where('is_web', 0);
+        $startDate = !empty($request->startDate) ? Carbon::parse($request->startDate)->format('Y-m-d') : Carbon::now()->startofmonth()->format('Y-m-d');
+        $endDate = !empty($request->endDate) ? Carbon::parse($request->endDate)->format('Y-m-d') : Carbon::now()->format('Y-m-d');
+        $sort = !empty($request->sort) ? $request->sort : 'date';
+        $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
+        $limit = ($request->limit) ? $request->limit : 25;
+
+        $query = Sale::
+        select("sales.*", "b.id as customer_id", 'b.name as customer')
+        ->join('users as b', 'b.id', '=', 'sales.customer_id')
+        ->withCount(['line'])
+        ->where('is_pos', 0)->where('is_web', 0)
+        ->when($request->search, function($q, $search){
+            return $q->where('ref', 'LIKE', '%' . $search . '%')
+            ->orWhere('b.name', 'LIKE', '%' . $search . '%')
+            ->orWhere('date', 'LIKE', '%' . $search . '%');
+        })
+        ->where(function ($query) use ($startDate, $endDate) {
+            $query->whereDate("date", ">=", $startDate)
+                ->orWhereDate("date", "=", $endDate);
+        });
         
-        $dataList = $query->orderBy('id', 'desc')->paginate(10);
+        $dataList = $query->orderBy($sort, $sortDir)->paginate($limit);
  
         return Inertia::render('Backend/Sales/Index', [
             'dataList' => $dataList,
@@ -51,43 +69,34 @@ class SaleOrderController extends Controller
 
     public function web(Request $request)
     {
+        
+        $startDate = !empty($request->startDate) ? Carbon::parse($request->startDate)->format('Y-m-d') : Carbon::now()->startofmonth()->format('Y-m-d');
+        $endDate = !empty($request->endDate) ? Carbon::parse($request->endDate)->format('Y-m-d') : Carbon::now()->format('Y-m-d');
+        $sort = !empty($request->sort) ? $request->sort : 'date';
+        $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
+        $limit = ($request->limit) ? $request->limit : 25;
+        $status = ($request->status) ? $request->status : 'pending';
 
-        $overview = Collect([
-            'pending' => Sale::where('status', 'pending')->where('is_pos', 0)->where('payment_status', 'paid')->count(),
-            'confirmed' => Sale::where('status', 'confirmed')->where('is_pos', 0)->where('payment_status', 'paid')->count(),
-            'dikirim' => Sale::where('status', 'delivery')->where('is_pos', 0)->where('payment_status', 'paid')->count(),
-            'selesai' => Sale::where('status', 'done')->where('is_pos', 0)->where('payment_status', 'paid')->count(),
-            'cancel' => Sale::where('status', 'cancel')->where('is_pos', 0)->count(),
-        ]);
+        $overview = [
+            'pending' => Sale::where('status', 'pending')->where('is_web', 1)->count(),
+            'confirmed' => Sale::where('status', 'confirmed')->where('is_web', 1)->count(),
+            'dikirim' => Sale::where('status', 'delivery')->where('is_web', 1)->count(),
+            'selesai' => Sale::where('status', 'done')->where('is_web', 1)->count(),
+            'cancel' => Sale::where('status', 'cancel')->where('is_web', 1)->count(),
+        ];
 
-        $query = Sale::with('customer:id,name,avatar')->withCount(['line'])
-        ->where('is_pos', 0);
-
-        $query->when($request->status == 'pending' || empty($request->status), function ($q) {
-            return $q->where('status', 'pending')->where('payment_status', 'paid');
+        $query = Sale::select("sales.*", "b.id as customer_id", 'b.name as customer')
+        ->join('users as b', 'b.id', '=', 'sales.customer_id')
+        ->Where('is_web', 1)
+        ->when($status != 'cancel', function ($q) use ($status) {
+            return $q->where('status', $status)->whereIn('payment_status', ['paid', 'pending']);
         });
 
-        $query->when($request->status == 'confirmed', function ($q) {
-            return $q->where('status', 'confirmed')->where('payment_status', 'paid');
-        });
-
-        $query->when($request->status == 'dikirim', function ($q) {
-            return $q->where('status', 'delivery')->where('payment_status', 'paid');
-        });
-
-        $query->when($request->status == 'selesai', function ($q) {
-            return $q->where('status', 'done');
-        });
-
-        $query->when($request->status == 'cancel', function ($q) {
+        $query->when($status == 'cancel', function ($q) {
             return $q->where('status', 'cancel');
         });
-
-        $query->when($request->search, function ($q) {
-            return $q->where('ref', 'LIKE', '%' . $search . '%');
-        });
         
-        $dataList = $query->orderBy('id', 'desc')->paginate(10);
+        $dataList = $query->orderBy('id', 'desc')->paginate($limit);
  
         return Inertia::render('Backend/Sales/IndexWeb', [
             'dataList' => $dataList,

@@ -19,8 +19,8 @@ use App\Models\Transaksi;
 use App\Models\Accounting\Payment;
 use App\Models\TransaksiLine;
 
-use App\Models\Simpanan\SimkopTransaksi;
-use App\Models\Simpanan\SimlaTransaksi;
+use Modules\Koperasi\Entities\Simpanan\SimkopTrans;
+use Modules\Koperasi\Entities\Simpanan\SimlaTransaksi;
 use App\Models\Simpanan\Wallet;
 
 class WajibController extends Controller
@@ -42,41 +42,41 @@ class WajibController extends Controller
      */
     public function index(Request $request)
     {
-        $keyword  = $request->search;
-        $from = isset($request->from) ? Carbon::parse($request->from) : Carbon::now()->startOfMonth();
-        $to = isset($request->to) ? Carbon::parse($request->to) : Carbon::now();
-        $status = $request->status;
+        $startDate = !empty($request->startDate) ? Carbon::parse($request->startDate)->format('Y-m-d') : Carbon::now()->startofmonth()->format('Y-m-d');
+        $endDate = !empty($request->endDate) ? Carbon::parse($request->endDate)->format('Y-m-d') : Carbon::now()->format('Y-m-d');
+        $sort = !empty($request->sort) ? $request->sort : 'date';
+        $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
+        $limit = ($request->limit) ? $request->limit : 25;
 
-        $eloq = SimkopTransaksi::select('a.anggota_id', 'simkop_transaksi.periode', 'a.nama', 'b.id', 'b.total', 'd.nama as teller', 'b.status', 'b.nomor', 'b.tgl')
-        ->leftJoin('anggota as a', 'a.anggota_id', '=', 'simkop_transaksi.anggota_id')
-        ->leftJoin('transaksi as b', 'b.id', '=', 'simkop_transaksi.transaksi_id')
-        ->leftJoin('admins as c', 'c.id', '=', 'b.teller_id')
-        ->leftJoin('anggota as d', 'd.anggota_id', '=', 'c.anggota_id')
-        ->where(function ($query) use ($keyword){
-            return $query->where('a.anggota_id', 'like', '%' . $keyword . '%')
-            ->orWhere('a.nama', 'like', '%' . $keyword . '%');
+        $eloq = DB::table('kop_trans as a')
+        ->select('a.id', 'a.name', 'a.date', 'a.total', 'a.anggota_id', 'b.nama as anggota_name', 'c.periode', 'a.payment_status')
+        ->join('kop_anggota as b', 'b.anggota_id', '=', 'a.anggota_id')
+        ->join('kop_wajib_trans as c', 'c.transaksi_id', '=', 'a.id')
+        ->when($request->search, function($q, $search){
+            return $q->where('a.name', 'LIKE', '%' . $search . '%')
+            ->orWhere('b.name', 'LIKE', '%' . $search . '%')
+            ->orWhere('a.anggota_id', 'LIKE', '%' . $search . '%')
+            ->orWhere('a.date', 'LIKE', '%' . $search . '%');
         })
-        ->whereBetween('tgl', [$from, $to])
-        ->when(isset($status), function ($q) use ($status){
-            return $q->where('b.status', $status);
+        ->where(function ($query) use ($startDate, $endDate) {
+            $query->whereDate("a.date", ">=", $startDate)
+                ->orWhereDate("a.date", "=", $endDate);
         });
 
-        $data = $eloq->orderBy('tgl', 'DESC')
-        ->paginate(20);
+        $data = $eloq->orderBy($sort, $sortDir)
+        ->paginate($limit);
 
-        $all = clone $eloq;
-        $pending = clone $eloq;
-        $done = clone $eloq;
+        $count = clone $eloq;
+        $sum = clone $eloq;
 
         $statistic = [
-            'all' => $all->count(),
-            'pending' => $pending->where('b.status', 0)->count(),
-            'done' =>  $done->where('b.status', 1)->count(),
+            'count' => $count->count(),
+            'sum' => $sum->sum('total'),
         ];
 
-        return Inertia::render('Simpanan/Wajib/Index',[
+        return Inertia::render('Koperasi::Simpanan/Wajib/Index',[
             'dataList' => $data,
-            'statistic' => $statistic
+            'overview' => $statistic
         ]);
     }
 
@@ -89,8 +89,8 @@ class WajibController extends Controller
     public function create(Request $request)
     {
         
-        return Inertia::render('Simpanan/Wajib/Form',[
-            'transaksi_ref' => GeneralHelp::generate_transaksi_ref('simkop'),
+        return Inertia::render('Koperasi::Simpanan/Wajib/Form',[
+            'name' => '12',
         ]);
     }
 
@@ -102,7 +102,7 @@ class WajibController extends Controller
      */
     public function store(Request $request)
     {
-
+        dd($request->all());
         $rules = [
             'anggota_id' => 'required',
             'tgl' => 'required',
@@ -214,13 +214,18 @@ class WajibController extends Controller
     public function show($id, Request $request)
     {
 
-        $data = Transaksi::with(['anggota', 'teller', 'line', 'payment' => function($q){
-            $q->with(['payment_method']); 
-         }])
-        ->where('id', $id)->first();
+        $data = DB::table('kop_trans as a')
+        ->select('a.id', 'a.name', 'a.service', 'a.date', 'a.total', 'a.anggota_id', 'b.nama as anggota_name', 'c.periode', 'a.payment_status')
+        ->join('kop_anggota as b', 'b.anggota_id', '=', 'a.anggota_id')
+        ->join('kop_wajib_trans as c', 'c.transaksi_id', '=', 'a.id')
+        ->where('a.id', $id)->first();
 
-        return Inertia::render('Simpanan/Wajib/Show', [
-            'data' => $data
+        $line = DB::table('kop_trans_line as a')
+        ->where('trans_id', $data->id)->get();
+
+        return Inertia::render('Koperasi::Simpanan/Wajib/Show', [
+            'data' => $data,
+            'line' => $line,
         ]);
     }
 
@@ -367,8 +372,9 @@ class WajibController extends Controller
     }
 
     public function paid($id){
-        $data = SimkopTransaksi::where('anggota_id', $id)
-        ->whereYear('periode', '>', '2020')->pluck('periode');
+        $year = Carbon::now()->format('Y');
+        $data = SimkopTrans::where('anggota_id', $id)
+        ->whereYear('periode', '>=', $year)->pluck('periode');
         return response()->json([
             'fail' => false,
             'date' => $data,

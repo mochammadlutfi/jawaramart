@@ -43,4 +43,27 @@ class ProductController extends Controller
             ], 400);
         }
     }
+
+
+    
+    /**
+     * List Product Brand.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function listBrand(Request $request)
+    {
+        $data = ProductBrand::orderBy('id', 'ASC')->limit(18)->get();
+        if($data){
+            return response()->json([
+                'data' => $data,
+                'fail' => false,
+            ], 200);
+        }else{
+            return response()->json([
+                'message' => "Product Not Found",
+                'fail' => false,
+            ], 400);
+        }
+    }
 }

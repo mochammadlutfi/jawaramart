@@ -8,32 +8,51 @@
                         <i class="si si-trash"></i>
                         Delete
                     </button>
-                    <Link class="btn btn-sm btn-secondary" :href="route('admin.product.edit', {id : data.id})" type="button">
-                        <i class="si si-plus"></i>
-                        Edit
-                    </Link>
                 </div>
             </div>
             <div class="block block-rounded block-shadow-2 block-bordered mb-5">
                 <div class="block-content block-content-full">
                     <div class="row">
                         <div class="col-4">
-                            <flicking ref="flicking0" :options="{ bounce: 30, disableOnInit: true}" :plugins="plugins">
-                                <div class="flicking-panel has-background-primary" v-for="(image, index) in data.images" :key="index">
-                                    <img class="panel-image img-fluid" :src="asset(image.path)" />
+                            <div class="no-gutters row">
+                                <div class="col-3 pr-lg-3">
+                                    <flicking ref="flicking1" :options="{ bound: true, bounce: 30, moveType: 'freeScroll', align : 'prev' }">
+                                        <div class="flicking-panel thumb has-background-primary" v-for="(thumb, iThumb) in data.images" :key="iThumb">
+                                            <img class="thumb-image" :src="asset(thumb.path)" />
+                                        </div>
+                                    </flicking>
                                 </div>
-                            </flicking>
-                            <flicking ref="flicking1" :options="{ bound: true, bounce: 30, moveType: 'freeScroll', align : 'prev' }">
-                                <div class="flicking-panel thumb has-background-primary" v-for="(thumb, iThumb) in data.images" :key="iThumb">
-                                    <img class="thumb-image" :src="asset(thumb.path)" />
+                                <div class="col-9">
+                                    <flicking ref="flicking0" :options="{ bounce: 30, disableOnInit: true}" :plugins="plugins">
+                                        <div class="flicking-panel has-background-primary" v-for="(image, index) in data.images" :key="index">
+                                            <img class="panel-image img-fluid" :src="asset(image.path)" />
+                                        </div>
+                                    </flicking>
                                 </div>
-                            </flicking>
+                            </div>
                         </div>
                         <div class="col-8">
-                            <h2 class="h3">{{ data.name }}</h2>
-                            <div class="d-flex">
-                                <div class="font-size-md" style="width:20%">Category</div>
-                                <div class="font-size-md font-weight-bold">{{ data.category.name }}</div>
+                            <div class="form-group">
+                                <label>Product Name</label>
+                                <h2 class="font-size-h3 font-w700">{{ data.name }}</h2>
+                            </div>
+                            <div class="gutters-tiny row">
+                                <div class="col-lg-3">Brand</div>
+                                <div class="col-lg-9 value">
+                                    <span class="font-w700">{{ data.category.name }}</span>
+                                </div>
+                            </div>
+                            <div class="gutters-tiny row">
+                                <div class="col-lg-3">Category</div>
+                                <div class="col-lg-9 value">
+                                    <span class="font-w700">{{ data.category.name }}</span>
+                                </div>
+                            </div>
+                            <div class="gutters-tiny row">
+                                <div class="col-lg-3">Show on ecommerce ?</div>
+                                <div class="col-lg-9 value">
+                                    <span class="font-w700">{{ data.category.name }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -124,14 +143,13 @@ export default {
 
 .flicking-panel.thumb {
     padding: 0;
-    width: 20%;
-    height: 20%;
+    /* width: 20%;
+    height: 20%; */
     margin-bottom: 0;
     cursor: pointer;
 }
 .flicking-panel .thumb-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
 }
 </style>

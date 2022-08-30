@@ -1,20 +1,19 @@
 <template>
-  <input ref="inputRef" type="text"/>
+  <input ref="inputRef" />
 </template>
 
 <script>
-import useCurrencyInput from "vue-currency-input";
-import { computed, watch } from '@vue/composition-api'
+import { watch } from 'vue' // Vue 2: import { watch } from '@vue/composition-api'
+import { useCurrencyInput } from 'vue-currency-input'
+
 export default {
   name: 'CurrencyInput',
   props: {
-    value: {
-      type: Number,
-      default: null
-    },
+    modelValue: Number, // Vue 2: value
+    options: Object
   },
   setup(props) {
-    const options = computed(() => ({ 
+    const options = { 
         currency: 'IDR',
         locale : 'id-ID',
         symbol : 'Rp',
@@ -27,14 +26,16 @@ export default {
         useGrouping : true,
         accountingSign : true
 
-    }))
-    const { inputRef, setValue } = useCurrencyInput(options.value)
+    };
+    const { inputRef, setOptions, setValue } = useCurrencyInput(options)
+
     watch(
-      () => props.value,
+      () => props.modelValue, // Vue 2: props.value
       (value) => {
         setValue(value)
       }
     )
+
     return { inputRef }
   }
 }

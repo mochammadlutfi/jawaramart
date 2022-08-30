@@ -74,7 +74,7 @@ export default {
             }
 
             const self = this;
-            await axios.get(this.route("accounting.config.payment_method.data"), params)
+            await axios.get(this.route("admin.accounting.config.payment_method.data"), params)
             .then(function (response) {
                 const resp = response.data;
                 self.options = resp;

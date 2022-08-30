@@ -11,22 +11,24 @@ use Carbon\Carbon;
 
 
 
-if(!function_exists('generate_transaksi_ref')){
-    function generate_transaksi_ref($type)
+if(!function_exists('get_kop_trans_name')){
+    function get_kop_trans_name($type)
     {
         if($type == 'simkop'){
             $sub_service = 'wajib';
             $service = 'simpanan';
-            $code = 'SK/';
+            $code = 'SW/';
         }else if($type == 'simla'){
             $sub_service = 'sukarela';
             $service = 'simpanan';
             $code = 'SL/';
+        }else{
+            $code = 'SK/';
         }
 
         $today = Carbon::today();
         
-        $q = Transaksi::select(DB::raw('MAX(RIGHT(nomor,5)) AS kd_max'))->whereDate('tgl', $today)->where('sub_service', $sub_service);
+        $q = DB::table('kop_trans')::select(DB::raw('MAX(RIGHT(nomor,5)) AS kd_max'))->whereDate('date', $today)->where('service', $service);
         $kd_cabang = 1;
         $no = 1;
 

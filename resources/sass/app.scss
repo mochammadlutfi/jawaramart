@@ -59,6 +59,8 @@
 
 @import '~bootstrap-vue/src/components/dropdown/_dropdown.scss';
 
+@import 'bootstrap-vue/dist/bootstrap-vue.css';
+
 // Extend Bootstrap styles and override the ones..
 // ..we can't alter with the provided variables
 @import 'base/reboot';

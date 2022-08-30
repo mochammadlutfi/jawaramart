@@ -73,7 +73,7 @@ class ProductBrandController extends Controller
                 return back();
             }
             DB::commit();
-            return redirect()->route('admin.product.brand.index');
+            return redirect()->route('admin.product.brand.index')->with('message', 'Product Brand Saved Sucessfully!');
         }
     }
 
@@ -116,7 +116,7 @@ class ProductBrandController extends Controller
 
             }catch(\QueryException $e){
                 DB::rollback();
-                return back();
+                return back()->withErrors();
             }
             DB::commit();
             return redirect()->route('admin.product.brand.index');

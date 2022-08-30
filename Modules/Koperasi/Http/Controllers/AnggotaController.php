@@ -430,15 +430,12 @@ class AnggotaController extends Controller
     }
 
 
-    public function data(Request $request)
+    public function json(Request $request)
     {
-        $keyword = $request->q;
-        $data = Anggota::with(["alamat" => function($q){
-            $q->where('anggota_alamat.domisili', '=', 1);
-        }])
-        ->where(function($q) use ($keyword){
-            $q->where('anggota_id', 'like', '%' . $keyword . '%')
-              ->orWhere('nama', 'like', '%' . $keyword . '%');
+        $search = $request->q;
+        $data = Anggota::where(function($q) use ($search){
+            $q->where('anggota_id', 'like', '%' . $search . '%')
+              ->orWhere('nama', 'like', '%' . $search . '%');
         })
         ->orderBy('anggota_id', 'DESC')->get();
         

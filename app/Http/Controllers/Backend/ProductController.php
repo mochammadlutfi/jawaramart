@@ -38,7 +38,7 @@ class ProductController extends Controller
         $search = $request->search;
         $sort = ($request->sort) ? $request->sort : 'name';
         $sort_dir = ($request->sortDir) ? $request->sortDir : 'asc';
-
+        $limit = ($request->limit) ? $request->limit : 25;
 
         $res = Product::select('id', 'name', 'show_web', 'slug', 'category_id', 'brand_id')
         ->withCount([
@@ -66,7 +66,7 @@ class ProductController extends Controller
             $sorted = $res->sortByDesc($sort);
         }
         
-        $ProductsPaginated = (new Collection($sorted->values()))->paginate(18);
+        $ProductsPaginated = (new Collection($sorted->values()))->paginate($limit);
         $items = $ProductsPaginated->items();
         
         $decodeFix = json_decode($ProductsPaginated->toJson());
@@ -96,26 +96,13 @@ class ProductController extends Controller
         // dd($request->all());
         $rules = [
             'name' => 'required',
-            // 'description' => 'required',
             'category_id' => 'required',
         ];
 
         $pesan = [
             'name.required' => 'Nama Produk Wajib Diisi!',
-            // 'description.required' => 'Deksripsi Produk Wajib Diisi!',
-            // 'description.min' => 'Deksripsi Produk Terlalu Sedikit!',
             'category_id.required' => 'Kategori Produk Wajib Diisi!',
         ];
-
-        if(count($request->variant) > 1){
-            
-        }else{
-            $rules['sell_price'] = 'required';
-            $rules['purchase_price'] = 'required';
-
-            $pesan['sell_price.required'] = 'Harga Jual Produk Wajib Diisi!';
-            $pesan['purchase_price.required'] = 'Harga Beli Produk Wajib Diisi!';
-        }
 
         $validator = Validator::make($request->all(), $rules, $pesan);
         if ($validator->fails()){
@@ -130,16 +117,17 @@ class ProductController extends Controller
                 $product->has_variant = $request->has_variant;
                 $product->save();
 
-                if($request->has_variant == 0){
+                if(!$request->has_variant){
                     $variant = new ProductVariant();
-                    $variant->sell_price = $request->sell_price;
-                    $variant->purchase_price = $request->purchase_price;
-                    $variant->sku = $request->sku;
+                    $variant->sell_price = $request->variant[0]['sell_price'];
+                    $variant->purchase_price = $request->variant[0]['purchase_price'];
+                    $variant->sku =$request->variant[0]['sku'];
                     $variant->product_id = $product->id;
                     $variant->save();
                 }else{
                     $product->var1_name = $request->var1_name;
                     $product->var1_value = json_encode($request->var1_value);
+
                     if(!empty($request->var2_value)){
                         $product->var2_name = $request->var2_name;
                         $product->var2_value = json_encode($request->var2_value);
@@ -159,10 +147,10 @@ class ProductController extends Controller
                     }
                 }
                 $count = 0;
-                foreach($request->images as $images){
+                foreach($request->images as $i){
                     $image = new ProductImage();
                     $image->product_id = $product->id;
-                    $image->path =  $this->uploadImage($images, Str::slug($product->name, '-'), $product->id);
+                    $image->path =  $this->uploadImage($i["image"], Str::slug($product->name, '-'), $product->id);
                     if($count == 0){
                         $image->is_utama = 1;
                     }else{
@@ -173,11 +161,11 @@ class ProductController extends Controller
                 }
                 
             }catch(\QueryException $e){
+                dd($e);
                 DB::rollback();
-                return back();
             }
             DB::commit();
-            return back();
+            return redirect()->route('admin.product.show', $product->id);
         }
     }
 
@@ -310,38 +298,28 @@ class ProductController extends Controller
                 }
 
                 $count = 0;
-                $old_images = [];
-                $new_images = [];
-                foreach($request->images as $images){
-                    if($images){
-                        if(is_string($images)){
-                            $old_images[] = $images;
+                foreach($request->images as $img){
+                    if($img["id"] == ""){
+                        $image = new ProductImage();
+                        $image->product_id = $product->id;
+                        $image->path =  $this->uploadImage($img["image"], Str::slug($product->name, '-'), $product->id);
+                        if(ProductImage::where('product_id', $product->id)->where('is_utama', 1)->get()->count() > 0){
+                            $image->is_utama = 0;
                         }else{
-                            $new_images[] = $images;
+                            $image->is_utama = 1;
                         }
+                        $image->save();
+                        $count++;
                     }
                 }
                 
-                $old_image_del = ProductImage::where('product_id', $product->id)->whereNotIn('path', $old_images)->get();
-                foreach($old_image_del as $del_image){
-                    if($this->deleteImage($del_image->path));
-                    {
-                        $del_image->delete();
-                    }
-                }
-
-                foreach($new_images as $images){
-                    $image = new ProductImage();
-                    $image->product_id = $product->id;
-                    $image->path =  $this->uploadImage($images, Str::slug($product->name, '-'), $product->id);
-                    if(ProductImage::where('product_id', $product->id)->where('is_utama', 1)->get()->count() > 0){
-                        $image->is_utama = 0;
-                    }else{
-                        $image->is_utama = 1;
-                    }
-                    $image->save();
-                    $count++;
-                }
+                // $old_image_del = ProductImage::where('product_id', $product->id)->whereNotIn('path', $old_images)->get();
+                // foreach($old_image_del as $del_image){
+                //     if($this->deleteImage($del_image->path));
+                //     {
+                //         $del_image->delete();
+                //     }
+                // }
                 
                 
             }catch(\QueryException $e){
@@ -360,8 +338,17 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        $product = Product::where('id', $id)->first();
+        DB::beginTransaction();
+        try{
+            $product = Product::where('id', $id)->delete();
+            $produtImage = ProductImage::where('product_id', $id)->delete();
+            $produtVariant = ProductVariant::where('product_id', $id)->delete();
         
+        }catch(\QueryException $e){
+            DB::rollback();
+        }
+        DB::commit();
+        return redirect()->route('admin.product.index')->with('message', 'Product Deleted Sucessfully');
 
     }
 

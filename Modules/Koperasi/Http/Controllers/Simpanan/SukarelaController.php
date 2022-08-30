@@ -39,32 +39,19 @@ class SukarelaController extends Controller
      */
     public function index(Request $request)
     {
-        $keyword  = $request->search;
-        $from = isset($request->from) ? Carbon::parse($request->from) : Carbon::today()->startOfMonth();
-        $to = isset($request->to) ? Carbon::parse($request->to) : Carbon::today();
-        $status = $request->status;
+        $startDate = !empty($request->startDate) ? Carbon::parse($request->startDate)->format('Y-m-d') : Carbon::now()->startofmonth()->format('Y-m-d');
+        $endDate = !empty($request->endDate) ? Carbon::parse($request->endDate)->format('Y-m-d') : Carbon::now()->format('Y-m-d');
+        $sort = !empty($request->sort) ? $request->sort : 'date';
+        $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
+        $limit = ($request->limit) ? $request->limit : 25;
 
-        $eloq = SimlaTransaksi::select('a.anggota_id', 'a.nama', 'simla_transaksi.debit', 'd.nama as teller', 'simla_transaksi.type', 'b.status', 'b.nomor', 'b.tgl', 'b.id', 'e.status as payment_status')
-            ->leftJoin('anggota as a', 'a.anggota_id', '=', 'simla_transaksi.anggota_id')
-            ->leftJoin('transaksi as b', 'b.id', '=', 'simla_transaksi.transaksi_id')
-            ->leftJoin('account_payment as e', 'e.paymenttable_id', '=', 'simla_transaksi.transaksi_id')
-            ->leftJoin('admins as c', 'c.id', '=', 'b.teller_id')
-            ->leftJoin('anggota as d', 'd.anggota_id', '=', 'c.anggota_id')
-            ->where(function ($query) use ($keyword) {
-                return $query->where('a.anggota_id', 'like', '%' . $keyword . '%')
-                ->orWhere('a.nama', 'like', '%' . $keyword . '%')
-                ->orWhere('b.jenis', 'like', '%' . $keyword . '%')
-                ->orWhere('b.nomor', 'like', '%' . $keyword . '%')
-                ->orWhere('d.nama', 'like', '%' . $keyword . '%');
-            })
-            ->whereBetween('tgl', [$from, $to])
-            ->where('simla_transaksi.type', 'deposit')
-            ->when(isset($status), function ($q) use ($status){
-                return $q->where('b.status', $status);
-            });
-
-            $data = $eloq->orderBy('tgl', 'DESC')
-            ->paginate(20);
+        $eloq = DB::table('kop_trans as a')
+            ->select('a.id', 'a.anggota_id', 'a.name', 'b.nama as anggota_name', 'a.date', 'a.service', 'a.type', 'a.payment_status', 'a.total', 'c.id as simla_id')
+            ->join('kop_anggota as b', 'b.anggota_id', '=', 'a.anggota_id')
+            ->join('kop_sukarela_trans as c', 'c.trans_id', '=', 'a.id')
+            ->whereIn('a.service', ['setoran sukarela', 'penarikan sukarela', 'transfer sukarela']);
+        $data = $eloq->orderBy($sort, $sortDir)
+        ->paginate($limit);
 
             
         $all = clone $eloq;
@@ -77,7 +64,7 @@ class SukarelaController extends Controller
             'done' =>  $done->where('b.status', 1)->count(),
         ];
 
-        return Inertia::render('Simpanan/Sukarela/Index',[
+        return Inertia::render('Koperasi::Simpanan/Sukarela/Index',[
             'dataList' => $data,
             'statistic' => $statistic
         ]);
@@ -192,12 +179,13 @@ class SukarelaController extends Controller
     public function show($id, Request $request)
     {
 
-        $data = Transaksi::with(['anggota', 'teller', 'line', 'payment' => function($q){
-           $q->with(['payment_method']); 
-        }])
-        ->where('id', $id)->first();
+        $data = DB::table('kop_trans as a')
+        ->select('a.id', 'a.name', 'a.service', 'a.date', 'a.total', 'a.anggota_id', 'b.nama as anggota_name', 'c.id as simla_id', 'a.payment_status', 'c.type')
+        ->join('kop_anggota as b', 'b.anggota_id', '=', 'a.anggota_id')
+        ->join('kop_sukarela_trans as c', 'c.trans_id', '=', 'a.id')
+        ->where('c.id', $id)->first();
 
-        return Inertia::render('Simpanan/Sukarela/Show',[
+        return Inertia::render('Koperasi::Simpanan/Sukarela/Show',[
             'data' => $data
         ]);
     }

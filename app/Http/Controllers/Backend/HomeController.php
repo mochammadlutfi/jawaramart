@@ -30,15 +30,27 @@ class HomeController extends Controller
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index(Request $request)
-    {
+    { 
+        $startDate = !empty($request->startDate) ? Carbon::parse($request->startDate)->format('Y-m-d') : Carbon::now()->startofmonth()->format('Y-m-d');
+        $endDate = !empty($request->endDate) ? Carbon::parse($request->endDate)->format('Y-m-d') : Carbon::now()->format('Y-m-d');
 
         $today = Carbon::now()->format('m');
-        // dd($period->toArray());
-        $customer = User::whereMonth('created_at', $today)->get()->count();
-        $sale_orders = Sale::whereMonth('date', $today)->get()->count();
-        $purchase_orders = Purchase::whereMonth('date', $today)->get()->count();
-        $sale_profit = Sale::whereMonth('date', $today)->get()->sum('grand_total');
-
+        $customer = User::where(function ($query) use ($startDate, $endDate) {
+            $query->whereDate("created_at", ">=", $startDate)
+                ->orWhereDate("created_at", "=", $endDate);
+        })->get()->count();
+        $sale_orders = Sale::where(function ($query) use ($startDate, $endDate) {
+            $query->whereDate("date", ">=", $startDate)
+                ->orWhereDate("date", "=", $endDate);
+        })->get()->count();
+        $purchase_orders = Purchase::where(function ($query) use ($startDate, $endDate) {
+            $query->whereDate("date", ">=", $startDate)
+                ->orWhereDate("date", "=", $endDate);
+        })->get()->count();
+        $sale_profit = Sale::where(function ($query) use ($startDate, $endDate) {
+            $query->whereDate("date", ">=", $startDate)
+                ->orWhereDate("date", "=", $endDate);
+        })->get()->sum('grand_total');
         
         $overview = collect([
             [
@@ -57,7 +69,7 @@ class HomeController extends Controller
                 'type' => 'count',
             ],
             [
-                'title' => 'Earnings',
+                'title' => 'Revenue',
                 'data' => $sale_profit,
                 'type' => 'money',
             ],

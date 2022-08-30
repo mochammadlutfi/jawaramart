@@ -19,10 +19,10 @@ Route::prefix('/admin/koperasi')->name('admin.kop.')->group(function() {
         Route::post('/store','AnggotaController@store')->name('store');
         Route::get('/edit/{id}', 'AnggotaController@edit')->name('edit');
         Route::post('/update','AnggotaController@update')->name('update');
+        Route::get('/json','AnggotaController@json')->name('json');
     });
 
     
-        
     Route::group(['prefix' => 'simpanan','namespace' => 'Simpanan', 'as' => 'simpanan.'], function () {
 
         Route::group(['prefix' => 'wajib', 'as' => 'wajib.'], function () {
@@ -37,22 +37,13 @@ Route::prefix('/admin/koperasi')->name('admin.kop.')->group(function() {
         });
 
 
-        Route::group(['prefix' => 'sukarela/deposit', 'as' => 'sukarela.'], function () {
+        Route::group(['prefix' => 'sukarela', 'as' => 'sukarela.'], function () {
             Route::get('/', 'SukarelaController@index')->name('index');
             Route::get('/create', 'SukarelaController@create')->name('create');
             Route::post('/store','SukarelaController@store')->name('store');
             Route::get('/edit/{id}', 'SukarelaController@edit')->name('edit');
             Route::post('/update','SukarelaController@update')->name('update');
-            Route::get('/detail/{id}', 'SukarelaController@show')->name('show');
-        });
-
-        Route::group(['prefix' => 'sukarela/withdraw', 'as' => 'sukarela.withdraw.'], function () {
-            Route::get('/', 'SukarelaWithdrawController@index')->name('index');
-            Route::get('/create', 'SukarelaWithdrawController@create')->name('create');
-            Route::post('/store','SukarelaWithdrawController@store')->name('store');
-            Route::get('/edit/{id}', 'SukarelaWithdrawController@edit')->name('edit');
-            Route::post('/update','SukarelaWithdrawController@update')->name('update');
-            Route::get('/detail/{id}', 'SukarelaWithdrawController@show')->name('show');
+            Route::get('/show/{id}', 'SukarelaController@show')->name('show');
         });
         
     });

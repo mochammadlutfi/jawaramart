@@ -27,6 +27,7 @@
             <slot name="footer"></slot>
         </base-footer>
         <!-- END Footer -->
+        
     </div>
 </template>
 

@@ -1,0 +1,187 @@
+<template>
+    <BaseLayout title="List Sales">
+        <div class="content">
+            <div class="content-heading pt-0 mb-3">
+                List Simpanan Wajib
+                <div class="float-right">
+                    <date-range-picker 
+                    ref="picker" 
+                    :locale-data="{ firstDay: 1, format: 'dd mmmm yyyy' }" 
+                    control-container-class="form-control form-control-sm" 
+                    v-model="filter"
+                    @update="setFilterDate"
+                    :auto-apply="true"
+                    opens="left"
+                    >
+                    </date-range-picker>
+                </div>
+            </div>
+
+            <div class="row gutters-tiny">
+                <div class="col-md-6 col-xl-4">
+                    <a class="block block-rounded block-link-shadow" href="javascript:void(0)">
+                        <div class="block-content block-content-full block-sticky-options">
+                            <div class="block-options">
+                                <div class="block-options-item">
+                                <i class="fa fa-circle-o fa-2x text-info-light"></i>
+                                </div>
+                            </div>
+                            <div class="py-20 text-center">
+                                <div class="font-size-h2 font-w700 mb-0 text-info">{{ overview['count'] }}</div>
+                                <div class="font-size-sm font-w600 text-uppercase text-muted">Total Transaksi</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-xl-4">
+                    <a class="block block-rounded block-link-shadow" href="javascript:void(0)">
+                        <div class="block-content block-content-full block-sticky-options">
+                            <div class="block-options">
+                                <div class="block-options-item">
+                                    <i class="fa fa-check fa-2x text-success-light"></i>
+                                </div>
+                            </div>
+                            <div class="py-20 text-center">
+                                <div class="font-size-h2 font-w700 mb-0 text-warning">{{ currency(overview['sum']) }}</div>
+                                <div class="font-size-sm font-w600 text-uppercase text-muted">Jumlah Transaksi</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-xl-4">
+                    <a class="block block-rounded block-link-shadow" :href="route('admin.kop.simpanan.wajib.create')">
+                        <div class="block-content block-content-full block-sticky-options">
+                            <div class="block-options">
+                                <div class="block-options-item">
+                                <i class="si si-paper-plane fa-3x text-success-light"></i>
+                                </div>
+                            </div>
+                            <div class="py-20 text-center">
+                                <div class="font-size-h2 font-w700 mb-0 text-success">
+                                    <i class="fa fa-plus"></i>
+                                </div>
+                                <div class="font-size-sm font-w600 text-uppercase text-muted">Tambah</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        
+            <base-table :values="dataList" :columns="columns" :filter="params" defaultSort="date">
+                <template #body="data">
+                    <tr v-for="value in data.values" :key="value.id">
+                        <td>{{ format_date(value.date) }}</td> 
+                        <td>{{ value.name }}</td>
+                        <td>{{ value.anggota_name }}</td>
+                        <td>{{ format_period(value.periode) }}</td>
+                        <td>
+                            <span class="badge badge-success" v-if="value.payment_status == 'paid'">Paid</span>
+                            <span class="badge badge-info" v-else-if="value.payment_status == 'partial'">Partial</span>
+                            <span class="badge badge-danger" v-else>Unpaid</span>
+                        </td>
+                        <td>{{ currency(value.total) }}</td>
+                        <td>
+                            <a :href="route('admin.kop.simpanan.wajib.show', {id : value.id})" class="btn btn-secondary btn-sm">
+                                <i class="si si-eye mr-1"></i>
+                                Detail
+                            </a>
+                        </td>
+                    </tr>
+                </template>
+            </base-table>
+        </div>
+    </BaseLayout>
+</template>
+
+<script>
+import moment from 'moment';
+import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
+import DateRangePicker from 'vue2-daterange-picker';
+import BaseTable from '@/components/Table/BaseTable.vue';
+export default {
+    components: {
+        BaseLayout,
+        DateRangePicker,
+        BaseTable,
+    },
+    data(){
+        return {
+            columns : [
+                {
+                    name : "Date",
+                    field : "date",
+                    width : "15%",
+                },
+                {
+                    name : 'Transaction No',
+                    field : 'name',
+                    width : "15%",
+                },
+                {
+                    name : "Member",
+                    field : 'anggota_name',
+                    width : "20%",
+                },
+                {
+                    name : "Period",
+                    field : 'periode',
+                    width : "15%",
+                },
+                {
+                    name : "Payment Status",
+                    field : 'payment_status',
+                    width : "10%",
+                },
+                {
+                    name : "Total Amount",
+                    field : 'total',
+                    width : "15%",
+                }
+            ],
+            filter : {
+                startDate : this.route().params.startDate == undefined ? moment().startOf('month') :  moment(this.route().params.startDate, 'DD-MM-YYYY'),
+                endDate : this.route().params.endDate == undefined ? moment() : moment(this.route().params.endDate, 'DD-MM-YYYY'),
+            },
+            configRange : {
+                mode: "multiple",
+                maxDate: "today",
+                dateFormat: "Y-m-d",
+            },
+            params : {
+                startDate : this.route().params.startDate == undefined ? moment().startOf('month').format('DD-MM-YYYY').toString() :  moment(this.route().params.startDate, 'DD-MM-YYYY').format('DD-MM-YYYY').toString(),
+                endDate : this.route().params.endDate == undefined ? moment().format('DD-MM-YYYY').toString() : moment(this.route().params.endDate, 'DD-MM-YYYY').format('DD-MM-YYYY').toString(),
+            }
+        } 
+    },
+    props: {
+        dataList: Object,
+        overview : Array
+    },
+    mounted(){
+        
+    },
+    methods :{
+        format_date(value) {
+            if (value) {
+                moment.locale('id');
+                return moment(String(value)).format('DD/MM/YYYY hh:mm')
+            }
+        },
+        format_period(value){
+            if (value) {
+            moment.locale('id');
+            return moment(String(value)).format('MMMM YYYY')
+            }
+        },
+        setFilterDate() {
+            if(this.filter.startDate && this.filter.endDate){
+                this.params.startDate = moment(this.filter.startDate).format('DD-MM-YYYY').toString();
+                this.params.endDate = moment(this.filter.endDate).format('DD-MM-YYYY').toString();
+            }
+        },
+    }
+}
+</script>

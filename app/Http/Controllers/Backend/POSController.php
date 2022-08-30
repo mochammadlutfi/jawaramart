@@ -32,19 +32,33 @@ class POSController extends Controller
         $this->middleware('auth:admin');
     }
 
-    /**
+    /**  
      * Show Admin Dashboard.
      *
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        
-        $dataList = Sale::with('customer:id,name,avatar')->withCount(['line'])
+        $startDate = !empty($request->startDate) ? Carbon::parse($request->startDate)->format('Y-m-d') : Carbon::now()->startofmonth()->format('Y-m-d');
+        $endDate = !empty($request->endDate) ? Carbon::parse($request->endDate)->format('Y-m-d') : Carbon::now()->format('Y-m-d');
+        $sort = !empty($request->sort) ? $request->sort : 'date';
+        $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
+        $limit = ($request->limit) ? $request->limit : 25;
+
+        $query = Sale::select("sales.*", "b.id as customer_id", 'b.name as customer')
+        ->join('users as b', 'b.id', '=', 'sales.customer_id')
         ->where('is_pos', 1)
-        ->when($request->search, function ($q) {
-            return $q->where('ref', 'LIKE', '%' . $search . '%');
-        })->orderBy('id', 'desc')->paginate(10);
+        ->when($request->search, function($q, $search){
+            return $q->where('ref', 'LIKE', '%' . $search . '%')
+            ->orWhere('b.name', 'LIKE', '%' . $search . '%')
+            ->orWhere('date', 'LIKE', '%' . $search . '%');
+        })
+        ->where(function ($query) use ($startDate, $endDate) {
+            $query->whereDate("date", ">=", $startDate)
+                ->orWhereDate("date", "=", $endDate);
+        });
+
+        $dataList = $query->orderBy($sort, $sortDir)->paginate($limit);
 
         return Inertia::render('Backend/POS/Index', [
             'dataList' => $dataList,

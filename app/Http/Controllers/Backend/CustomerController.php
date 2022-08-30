@@ -29,6 +29,10 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
+        $sort = !empty($request->sort) ? $request->sort : 'id';
+        $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
+        $limit = ($request->limit) ? $request->limit : 25;
+
         $dataList = User::withCount(['sale' => function($q){
             $q->select(DB::raw('coalesce(SUM(grand_total),0) as paidsum'));
         },])
@@ -36,7 +40,7 @@ class CustomerController extends Controller
             $query->where('name', 'LIKE', '%' . $search . '%')
             ->orWhere('email', 'LIKE', '%' . $search . '%');
         })
-        ->orderBy('id', 'desc')->paginate(20);
+        ->orderBy($sort, $sortDir)->paginate($limit);
  
         return Inertia::render('Backend/Customer/index', [
             'dataList' => $dataList

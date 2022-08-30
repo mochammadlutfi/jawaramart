@@ -1,37 +1,28 @@
 <template>
     <div>
-        <div class="block block-rounded block-shadow block-bordered d-md-block d-none mb-10">
+        <div class="block block-rounded block-shadow-2 block-bordered mb-5">
             <div class="block-content p-2">
                 <div class="row justify-content-between">
-                    <div class="col-4">
+                    <div class="col-sm-12 col-md-6">
+                        <div class="dataTables_length">
+                            <label>
+                                <select aria-controls="DataTables_Table_4" class="form-control" v-model="currentLimit" @change="doSearch">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-4">
                         <div class="has-search">
                             <i class="fa fa-search"></i>
                             <input type="search" class="form-control" id="search-data-list" v-model="search" @input="doSearch" autocomplete="off">
                         </div>
                     </div>
-                    <div class="col-4">
-                    </div>
-                    <div class="col-4">
-                        <div class="d-flex float-right">
-                            <div class="my-auto px-3">
-                                <span>{{ values.from }}-{{ values.to }}/{{ values.total }}</span>
-                            </div>
-                            <div class="pt-25 pl-0">
-                                <button @click="prevPage" class="btn btn-alt-secondary mx-1" type="button"
-                                :disabled="checkPaginate('prev')">
-                                    <i class="fa fa-chevron-left fa-fw"></i>
-                                </button>
-                                <button @click="nextPage" class="btn btn-alt-secondary mx-1" type="button"
-                                :disabled="checkPaginate('next')">
-                                    <i class="fa fa-chevron-right fa-fw"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
-        </div>
-        <div class="block block-rounded block-shadow-2 block-bordered mb-5">
             <div class="block-content px-0 py-0">
                 <table class="table table-striped table-vcenter table-hover mb-0">
                     <thead class="thead-light">
@@ -42,7 +33,7 @@
                             <table-head v-for="(th, thi) in columns" :key="thi" :name="th.field" :width="th.width">
                                 {{ th.name }}
                             </table-head>
-                            <th width="8%"></th>
+                            <th width="13%"></th>
                         </tr>
                     </thead>
                     <tbody v-if="loading">
@@ -73,6 +64,24 @@
                     </tbody>
                 </table>
             </div>
+            <div class="block-content p-2">
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="py-2" id="table-info" role="status" aria-live="polite">
+                            Showing {{ (values.from) ? values.from : 0 }} to {{ (values.to) ? values.to : 0 }} of {{ values.total }} entries
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="float-right">
+                            <ul class="pagination mb-0">
+                                <li class="page-item" :class="{'active': link.active, 'disabled': link.url == null }" v-for="(link, p) in values.links" :key="p">
+                                    <a class="page-link" :href="get_link(link.url)" v-html="link.label"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -90,6 +99,11 @@ export default {
         checkbox : Boolean,
         filter : Object,
         defaultSort : String,
+        params : Object,
+        limit: {
+            type: Number,
+            default: 25
+        }
     },
     data(){
         return {
@@ -99,6 +113,7 @@ export default {
             currentSort: this.route().params.sort == undefined ? this.defaultSort : this.route().params.sort,
             currentSortDir: this.route().params.sortDir == undefined ? 'asc' : this.route().params.sortDir,
             currentPage: this.route().params.page == undefined ? 1 : this.route().params.page,
+            currentLimit: this.route().params.limit == undefined ? this.limit : this.route().params.limit,
         }
     },
     provide: function() {
@@ -117,28 +132,22 @@ export default {
             }
         },
     },
+    watch : {
+        filter: {
+            handler: function(val, oldVal) {
+                this.fetchData();
+            },
+            deep: true,
+        },
+    },
     methods :{
         sortBy:function(s) {
-
             if(s === this.currentSort) {
                 this.currentSortDir = this.currentSortDir === 'asc' ? 'desc' :'asc';
             }
-
             this.loading = true;
             this.currentSort = s;
             this.fetchData();
-        },
-        checkPaginate(type){
-            const vm = this;
-            if(vm.values){
-                if(type == 'next'){
-                    return (vm.values.next_page_url) ? false : true;
-                }else{
-                    return (vm.values.prev_page_url) ? false : true;
-                }
-            }else{
-                return true;
-            }
         },
         nextPage: function() {
             if(this.currentPage < this.values.total){
@@ -159,6 +168,24 @@ export default {
                 return moment(String(value)).format('DD MMM YYYY')
             }
         },
+        get_link(value){
+            if(value){
+                var url = new URL(value);
+                if(this.search){
+                    url.searchParams.append('search', this.search);
+                }
+                url.searchParams.append('sort', this.currentSort);
+                url.searchParams.append('sortDir', this.currentSortDir);
+                url.searchParams.append('limit', this.currentLimit);
+                if(this.filter){
+                    for (const key in this.filter) {
+                        url.searchParams.append(key, this.filter[key]);
+                    }
+                }
+
+                return url;
+            }
+        },
         doSearch : _.debounce(function(){
             this.loading = true;
             this.fetchData();
@@ -167,8 +194,13 @@ export default {
             let params = {
                 search : this.search,
                 page : page,
+                limit : this.currentLimit,
                 sort : this.currentSort,
                 sortDir : this.currentSortDir
+            }
+
+            if(this.filter){
+                params = Object.assign(params, this.filter);
             }
 
             this.$inertia.get(this.route(this.route().current(), params), {

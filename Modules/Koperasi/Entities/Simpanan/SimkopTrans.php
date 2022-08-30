@@ -1,13 +1,13 @@
 <?php
 
-namespace Modules\Koperasi\Entities;
+namespace Modules\Koperasi\Entities\Simpanan;
 
 
 use Illuminate\Database\Eloquent\Model;
 
-class SimkopTransaksi extends Model
+class SimkopTrans extends Model
 {
-    protected $table = 'simkop_transaksi';
+    protected $table = 'kop_wajib_trans';
     protected $primaryKey = 'id';
 
     protected $fillable = [

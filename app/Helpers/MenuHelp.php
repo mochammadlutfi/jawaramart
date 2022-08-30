@@ -253,8 +253,6 @@ class MenuHelp
         ]);
         
 
-        // $sub_menu = [];
-
         
         $sub_menu = [
             [
@@ -262,11 +260,11 @@ class MenuHelp
                 "subActivePaths" => 'admin.kop.simpanan.*',
                 "sub" => [
                   [
-                      "name" => 'Payment Method',
+                      "name" => 'Simpanan Wajib',
                       "to" => 'admin.kop.simpanan.wajib.index',
                   ],
                   [
-                      "name" => 'Bank',
+                      "name" => 'Simpanan Sukarela',
                       "to" => 'admin.kop.simpanan.sukarela.index',
                   ],
                 ]

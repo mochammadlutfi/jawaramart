@@ -94,14 +94,16 @@
                                     </td>
                                     <td>{{ data.product_count }} Product</td>
                                     <th>
-                                        <b-button variant="secondary" v-b-tooltip.hover.nofade.top="'Edit'"
-                                            @click="edit(data)" size="sm">
-                                            <i class="si si-note"></i>
-                                        </b-button>
-                                        <b-button variant="secondary" v-b-tooltip.hover.nofade.top="'Delete'"
-                                            @click="destroy(data)" size="sm">
-                                            <i class="si si-trash"></i>
-                                        </b-button>
+                                        <b-dropdown text="Action" class="m-md-2"  size="sm">
+                                            <a href="javascript:void(0)" class="dropdown-item" @click.prevent="edit(data)">
+                                                <i class="si si-note mr-3"></i>
+                                                Edit
+                                            </a>
+                                            <a href="javascript:void(0)" class="dropdown-item" @click.prevent="destroy(data)">
+                                                <i class="si si-trash mr-3"></i>
+                                                Delete
+                                            </a>
+                                        </b-dropdown>
                                     </th>
                                 </tr>
                             </template>
@@ -117,6 +119,8 @@
                 </div>
             </div>
         </div>
+        
+
         <b-modal v-model="modalShow" size="md" rounded body-class="p-0" centered hide-footer hide-header>
             <div class="block block-rounded  block-transparent mb-0">
                 <form @submit.prevent="submit">
@@ -198,15 +202,6 @@
                 editMode: false,
             }
         },
-        mounted() {
-            this.$inertia.on('start', (event) => {
-                console.log(event);
-                // this.loading = true;
-            })
-            // this.$inertia.on('finish', (event) => {
-            //     this.loading = false;
-            // })
-        },
         watch: {
             search: function () {
                 this.doSearch()
@@ -246,11 +241,9 @@
                 form.post(url, {
                     preserveScroll: true,
                     onSuccess: () => {
-                        this.$swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: `Brand Saved Successfully!`,
-                        });
+                        this.$bvToast.toast(this.$page.props.flash.message, {
+                            autoHideDelay: 5000,
+                        })
                         this.reset();
                     },
                 });
@@ -296,7 +289,6 @@
                 if (!this.selectAll) {
                     this.dataList.data.forEach((value, index) => {
                         this.selected.push(value.id)
-
                     });
                 }
             }

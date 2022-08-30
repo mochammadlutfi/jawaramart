@@ -210,11 +210,11 @@
                                 <div class="row">
                                     <div class="col" v-for="(n, i) in 5" :key="i">
                                         <ImageUpload 
-                                            :image="form.images[i]" 
+                                            :data="images[i] == undefined ? null : images[i]" 
                                             :ratio="1/1"
                                             :height="200"
-                                            @done="(image) => form.images[i] = image"
-                                            @removeImage="(image) => form.images[i] = null" />
+                                            @done="(image) => images[i] = image"
+                                            @removeImage="(image) => imageDeleted[i] = image" />
                                     </div>
                                 </div>
                             </div>
@@ -231,7 +231,9 @@ import { Link } from '@inertiajs/inertia-vue';
 import BaseLayout from '@/Layouts/Backend/Authenticated.vue';
 import CategorySelector from '../Category/CategoryModal.vue';
 import CurrencyInput  from '@/components/Form/CurrencyInput.vue';
-import ImageUpload from '@/components/SingleImageUpload.vue';
+// import ImageUpload from '@/components/SingleImageUpload.vue';
+// import ImageUpload from '../FormImage.vue';
+import ImageUpload from './FormImage.vue';
 
 export default {
     components: {
@@ -249,12 +251,11 @@ export default {
                 description : null,
                 category_id : null,
                 has_variant : false,
-                show_on_web : true,
+                show_on_web : 0,
                 var1_name : 'Ukuran',
                 var1_value : null,
                 var2_name : "Warna",
                 var2_value : null,
-                images : [],
             },
             variant : [{
                 id : null,
@@ -269,6 +270,7 @@ export default {
             var2_value : [],
             variantDeleted : [],
             imageDeleted : [],
+            images : [],
         }
     },
     props: {
@@ -291,11 +293,6 @@ export default {
             if(val.length > 0){
                 this.updateVariantRow();
             }
-            // const removed = oldVal.filter(v => !val.includes(v));
-            // if(removed && removed.length > 0) {
-            //     // alert(`${removed} was removed from the list`);
-            //     this.removeVariantRow(1, removed);
-            // }
         },
         var2_value: function (val, oldVal) {
             this.var2_value = val;
@@ -304,14 +301,16 @@ export default {
                 this.updateVariantRow();
             }
         },
-        images: function (val, oldVal) {
-            this.form.images = val;
-            console.log(this.form.images);
-        },
     },
     methods :{
         submit: function(){
-            let data = Object.assign(this.form, {variant : this.variant, variant_deleted : this.variantDeleted});
+            let data = Object.assign(this.form, {
+                    variant : this.variant, 
+                    variant_deleted : this.variantDeleted,
+                    images : this.images,
+                    imageDeleted : this.imageDeleted,
+                }
+            );
             this.$swal.fire({
                 title: 'Tunggu Sebentar...',
                 text: '',
@@ -325,8 +324,6 @@ export default {
                 preserveScroll: true,
                 resetOnSuccess: true,
                 onSuccess: () => {
-                    this.editModeActive();
-
                     return this.$swal.fire({
                         icon: 'success',
                         title: 'Success',
@@ -339,12 +336,9 @@ export default {
                         }
                     });
                 },
-                onFinish :() => {
-                    this.$swal.close();
-                },
-                onerror: () => {
+                onError: () => {
                     return this.$swal.close();
-                }
+                },
             });
         },
         merger(oldVal, newVal){
@@ -444,13 +438,6 @@ export default {
             this.var2_value = [];
         },
 
-        coba(e){
-            console.log(e);
-            if(e.length > 0){
-                this.updateVariantRow();
-            }
-        },
-
         editModeActive(){
             if(this.editMode){
                 this.form.id = this.data.id;
@@ -479,25 +466,18 @@ export default {
                     this.var2_value = this.data.var2_value ? JSON.parse(this.data.var2_value) : [];
                 }else{
                     this.form.has_variant = false;
-                    // this.form.sell_price = this.data.variant[0].sell_price;
-                    // this.form.purchase_price = this.data.variant[0].purchase_price;
-                    // this.form.sku = this.data.variant[0].sku;
                 }
                 if(this.data.images.length > 0){
                     this.form.images = [];
                     this.data.images.forEach((value, index) => {
-                        // this.form.images.push({
-                        //     'id' : id,
-                        //     'image' : value.path,
-                        // });
-                        this.form.images.push(value.image_url);
+                        this.images.push({
+                            'id' : value.id,
+                            'image' : value.image_url,
+                        });
                     });
                 }
             }
         },
-        removeTag(tag){
-
-        }
     },
     mounted() {
         if(this.editMode){
